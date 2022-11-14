@@ -8,7 +8,7 @@ import:
   - ~/.config/alacritty/aw/current.yml
 
 shell:
-  program: /usr/local/bin/fish
+  program: /opt/homebrew/bin/fish
 selection:
   semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
   save_to_clipboard: true
@@ -16,18 +16,19 @@ selection:
 window:
   opacity: 0.9
   padding:
-    x: 5 
-    y: 5 
+    x: 5
+    y: 5
   dynamic_padding: false
   decorations: buttonless
-  startup_mode: Maximized 
+  startup_mode: Maximized
 font:
   normal:
-    # family: 'SFMono Nerd Font'
-    family: 'SauceCodePro Nerd Font'
-    style: Regular 
-  size: 20.0
-  use_thin_strokes: true
+    family: "MesloLGM Nerd Font"
+    #family: "SFMono Nerd Font"
+    #family: "SauceCodePro Nerd Font"
+    style: Regular
+  size: 16.0
+  #use_thin_strokes: true
 
 mouse:
   hide_when_typing: true
