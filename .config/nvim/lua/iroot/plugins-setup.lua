@@ -122,6 +122,9 @@ return packer.startup(function(use)
 	-- Zen mode
 	use("folke/zen-mode.nvim")
 
+	-- LSP Symbols
+	use("stevearc/aerial.nvim")
+
 	if packer_bootstrap then
 		require("packer").sync()
 	end
