@@ -1,5 +1,7 @@
 local opt = vim.opt -- for conciseness
 
+vim.wo.fillchars = "eob: "
+
 -- swap file disable
 opt.swapfile = false
 -- line numbers

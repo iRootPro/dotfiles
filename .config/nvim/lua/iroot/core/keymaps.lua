@@ -62,6 +62,9 @@ keymap.set("n", "<leader>gs", "<cmd>Telescope git_status<cr>") -- list current c
 -- restart lsp server (not on youtube nvim video)
 keymap.set("n", "<leader>rs", ":LspRestart<CR>") -- mapping to restart lsp if necessary
 
+-- Symbols
+keymap.set("n", "<leader>o", ":AerialToggle<CR>") -- mapping to restart lsp if necessary
+
 -- hop commands
 keymap.set("n", "<leader>hw", ":HopWord<CR>") -- go to any word in current buffer
 keymap.set("n", "<leader>hc", ":HopChar<CR>") -- go to any character in current buffer
