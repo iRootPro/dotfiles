@@ -91,6 +91,7 @@ return packer.startup(function(use)
 		"nvim-treesitter/nvim-treesitter",
 		run = function()
 			require("nvim-treesitter.install").update({ with_sync = true })
+			require("nvim-treesitter.install").prefer_git = true
 		end,
 	})
 
@@ -127,6 +128,20 @@ return packer.startup(function(use)
 	-- LSP Symbols
 	use("stevearc/aerial.nvim")
 
+	-- Chat GPT
+	use({
+		"jackMort/ChatGPT.nvim",
+		config = function()
+			require("chatgpt").setup({
+				-- optional configuration
+			})
+		end,
+		requires = {
+			"MunifTanjim/nui.nvim",
+			"nvim-lua/plenary.nvim",
+			"nvim-telescope/telescope.nvim",
+		},
+	})
 	if packer_bootstrap then
 		require("packer").sync()
 	end
