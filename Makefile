@@ -3,7 +3,7 @@ nvim:
 alacritty:
 	ln -s ~/dotfiles/.config/alacritty ~/.config/alacritty
 tmux:
-	ln -s ~/dotfiles/tmux/tmux.conf ~/.config/tmux/tmux.conf
+	ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
 skhd:
 	ln -s ~/dotfiles/.skhdrc ~/.skhdrc
 yabai:
