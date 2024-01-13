@@ -8,16 +8,11 @@ return {
     { "<leader>dy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
     { "<leader>dn", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
   },
-
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-  },
-
   opts = {
     workspaces = {
       {
         name = "Notes",
-        path = "/Users/sasha/Downloads/iroot-vault/iroot/",
+        path = "/Users/neupokoev/Documents/iroot-vault/iroot/",
       },
     },
     daily_notes = {

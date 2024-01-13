@@ -1,5 +1,5 @@
 nvim:
-	ln -s ~/dotfiles/.config/nvim ~/.config/nvim
+	ln -s ~/dotfiles/.config/nvim ~/.config
 alacritty:
 	ln -s ~/dotfiles/.config/alacritty ~/.config/alacritty
 tmux:
