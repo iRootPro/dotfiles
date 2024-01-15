@@ -10,3 +10,6 @@ skhd:
 	ln -s ~/dotfiles/.skhdrc ~/.skhdrc
 yabai:
 	ln -s ~/dotfiles/.yabairc ~/.yabairc
+matterhorn:
+	ln -s ~/dotfiles/.config/matterhorn/config.ini ~/.config/matterhorn/config.ini 
+	ln -s ~/dotfiles/.config/matterhorn/theme.ini ~/.config/matterhorn/theme.ini
