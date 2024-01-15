@@ -1,3 +1,5 @@
+zsh:
+	ln -s ~/dotfiles/.zshrc ~/.zshrc
 nvim:
 	ln -s ~/dotfiles/.config/nvim ~/.config
 alacritty:

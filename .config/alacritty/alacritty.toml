@@ -2,7 +2,7 @@ import = ["~/.config/alacritty/catppuccin-macchiato.toml"]
 live_config_reload = true
 
 [env]
-TERM = "screen-256color"
+TERM = "xterm-256color"
 
 [font]
 size = 16.0
