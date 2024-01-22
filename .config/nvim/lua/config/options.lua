@@ -3,4 +3,5 @@
 -- Add any additional options here
 local opt = vim.opt
 opt.relativenumber = false
+opt.conceallevel = 1
 opt.spelllang = en_us

@@ -16,7 +16,6 @@ export ZSH="$HOME/.oh-my-zsh"
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="powerlevel10k/powerlevel10k"
-. /opt/homebrew/etc/profile.d/z.sh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -82,6 +81,7 @@ plugins=(
   git
   zsh-autosuggestions
   pass
+  zoxide
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -130,3 +130,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 [[ -s "/Users/neupokoev/.gvm/scripts/gvm" ]] && source "/Users/neupokoev/.gvm/scripts/gvm"
+export PATH="$HOME/.sbm-cli/usr/bin:$PATH"
+autoload -U compinit; compinit
+source /Users/neupokoev/.sbm-cli/completion/zsh/sbm-cli

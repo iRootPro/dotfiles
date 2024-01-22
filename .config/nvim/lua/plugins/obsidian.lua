@@ -4,17 +4,33 @@ return {
   version = "*",
   ft = "markdown",
   keys = {
-    { "<leader>dt", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today" },
-    { "<leader>dy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
-    { "<leader>dn", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
+    { "<leader>ot", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today" },
+    { "<leader>oy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
+    { "<leader>on", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
   },
   opts = {
     workspaces = {
       {
         name = "Notes",
-        path = "/Users/neupokoev/Documents/iroot-vault/iroot/",
+        path = "~/Documents/iroot-vault/",
       },
     },
+
+    note_id_func = function(title)
+      -- Create note IDs in a Zettelkasten format with a timestamp and a suffix.
+      local suffix = ""
+      if title ~= nil then
+        -- If title is given, transform it into valid file name.
+        suffix = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+      else
+        -- If title is nil, just add 4 random uppercase letters to the suffix.
+        for _ = 1, 4 do
+          suffix = suffix .. string.char(math.random(65, 90))
+        end
+      end
+      return tostring(os.time()) .. "-" .. suffix
+    end,
+
     daily_notes = {
       -- Optional, if you keep daily notes in a separate directory.
       folder = "daily",
@@ -57,7 +73,9 @@ return {
       date_format = "%Y-%m-%d-%a",
       time_format = "%H:%M",
     },
+
     ui = {
+      conceallevel = 1,
       enable = true, -- set to false to disable all additional syntax features
       update_debounce = 200, -- update delay after a text change (in milliseconds)
       -- Define how various check-boxes are displayed
