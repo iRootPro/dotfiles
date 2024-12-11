@@ -1,0 +1,49 @@
+return {
+  -- "harrisoncramer/gitlab.nvim",
+  -- dependencies = {
+  --   "MunifTanjim/nui.nvim",
+  --   "nvim-lua/plenary.nvim",
+  --   "sindrets/diffview.nvim",
+  --   "stevearc/dressing.nvim", -- Recommended but not required. Better UI for pickers.
+  --   "nvim-tree/nvim-web-devicons", -- Recommended but not required. Icons in discussion tree.
+  -- },
+  -- enabled = true,
+  -- build = function()
+  --   require("gitlab.server").build(true)
+  -- end, -- Builds the Go binary
+  -- config = function()
+  --   require("gitlab").setup({
+  --     discussion_tree = {
+  --       position = "bottom",
+  --     },
+  --   })
+  --   local gitlab = require("gitlab")
+  --   gitlab.setup()
+  --   vim.keymap.set("n", "glr", gitlab.review, { silent = false, desc = "gitlab review" })
+  --   vim.keymap.set("n", "gls", gitlab.summary, { silent = false, desc = "gitlab summary" })
+  --   vim.keymap.set("n", "glA", gitlab.approve, { silent = false, desc = "gitlab approve" })
+  --   vim.keymap.set("n", "glR", gitlab.revoke, { silent = false, desc = "gitlab revoke" })
+  --   vim.keymap.set("n", "glc", gitlab.create_comment, { silent = false, desc = "gitlab create comment" })
+  --   vim.keymap.set(
+  --     "v",
+  --     "glc",
+  --     gitlab.create_multiline_comment,
+  --     { silent = false, desc = "gitlab create multiline comment" }
+  --   )
+  --   vim.keymap.set("v", "glC", gitlab.create_comment_suggestion, { silent = false, desc = "gitlab comment suggestion" })
+  --   vim.keymap.set(
+  --     "n",
+  --     "glm",
+  --     gitlab.move_to_discussion_tree_from_diagnostic,
+  --     { silent = false, desc = "gitlab discussion tree" }
+  --   )
+  --   vim.keymap.set("n", "gln", gitlab.create_note, { silent = false, desc = "gitlab create note" })
+  --   vim.keymap.set("n", "gld", gitlab.toggle_discussions, { silent = false, desc = "gitlab toggle discussions" })
+  --   vim.keymap.set("n", "glaa", gitlab.add_assignee, { silent = false, desc = "gitlab add assignee" })
+  --   vim.keymap.set("n", "glad", gitlab.delete_assignee, { silent = false, desc = "gitlab detele assignee" })
+  --   vim.keymap.set("n", "glra", gitlab.add_reviewer, { silent = false, desc = "gitlab add reviewer" })
+  --   vim.keymap.set("n", "glrd", gitlab.delete_reviewer, { silent = false, desc = "gitlab delete reviewer" })
+  --   vim.keymap.set("n", "glp", gitlab.pipeline, { silent = false, desc = "gitlab pipeline" })
+  --   vim.keymap.set("n", "glo", gitlab.open_in_browser, { silent = false, desc = "gitlab open in browser" })
+  -- end,
+}

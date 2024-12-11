@@ -27,17 +27,34 @@ return {
         },
       }
       -- https://github.com/go-delve/delve/blob/master/Documentation/usage/dlv_dap.md
+      dap.adapters.odin_app = {
+        type = "server",
+        host = "odin-app.sbmt",
+        port = 2345,
+      }
+
       dap.configurations.go = {
+        -- {
+        --   type = "go",
+        --   name = "Debug Webservice",
+        --   request = "launch",
+        --   showLog = false,
+        --   program = "${file}",
+        --   dlvToolPath = vim.fn.exepath("dlv"), -- Adjust to where delve is installed
+        -- },
+
         {
-          name = "[SBM-CLI] service up",
-          type = "go",
-          request = "launch",
-          program = "${workspaceFolder}/cmd/sbm-cli",
-          args = {
-            "service",
-            "up",
-          },
-          cwd = "/Users/neupokoev/Documents/Code/odin",
+          type = "odin_app",
+          request = "attach",
+          name = "Attach to odin-app.sbmt",
+          mode = "remote",
+          remotePath = "/go/src/gitlab.sbmt.io/paas/odin",
+          -- substitutePath = {
+          --   {
+          --     from = "${workspaceFolder}",
+          --     to = "/go/src/gitlab.sbmt.io/paas/odin",
+          --   },
+          -- },
         },
         {
           name = "[SBM-CLI] codegen --clients",
@@ -50,6 +67,78 @@ return {
           },
           cwd = "/Users/neupokoev/Documents/Code/assembly",
         },
+        {
+          name = "[SBM-CLI] codegen --silent [odin]",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "codegen",
+            "--silent",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/odin",
+        },
+        {
+          name = "[SBM-CLI] codegen [odin]",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "codegen",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/odin",
+        },
+        {
+          name = "[SBM-CLI] codegen --openapi-clients freya=pods",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "codegen",
+            "--openapi-clients",
+            "freya=pods",
+            "--version=1.0.0",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/ruby-test",
+        },
+        {
+          name = "[SBM-CLI] codegen --openapi-clients freya1",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "codegen",
+            "--openapi-clients",
+            "freya1",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/ruby-test",
+        },
+        {
+          name = "[SBM-CLI] dependency add mincer",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "dependency",
+            "add",
+            "https://gitlab.sbmt.io/paas/platform/mincer/",
+            "--branch=master",
+            "--grpc=events",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/ruby-test/",
+        },
+        {
+          name = "[SBM-CLI] inframanifest check",
+          type = "go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/sbm-cli",
+          args = {
+            "inframanifest",
+            "check",
+          },
+          cwd = "/Users/neupokoev/Documents/Code/odin",
+        },
+
         {
           name = "[gocover] problem",
           type = "go",
@@ -123,6 +212,14 @@ return {
           request = "launch",
           program = "/Users/sasha/Documents/Code/sbm-cli/bin/sbm-cli/sbm-cli service up",
           cwd = "/Users/sasha/Documents/Code/mincer",
+        },
+        {
+          name = "odin",
+          type = "go",
+          request = "attach",
+          mode = "remote",
+          remotePath = "/go/src/gitlab.sbmt.io/paas/odin",
+          connect = { port = 2345, host = "odin-app.sbmt" },
         },
       }
     end,
