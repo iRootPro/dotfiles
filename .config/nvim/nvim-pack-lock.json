@@ -1,0 +1,65 @@
+{
+  "plugins": {
+    "blink.cmp": {
+      "rev": "327fff9",
+      "src": "https://github.com/saghen/blink.cmp",
+      "version": "1.0.0 - 2.0.0"
+    },
+    "go.nvim": {
+      "rev": "81bb94c",
+      "src": "https://github.com/ray-x/go.nvim"
+    },
+    "guihua.lua": {
+      "rev": "314b899",
+      "src": "https://github.com/ray-x/guihua.lua"
+    },
+    "kanagawa.nvim": {
+      "rev": "aef7f5c",
+      "src": "https://github.com/rebelot/kanagawa.nvim"
+    },
+    "lualine.nvim": {
+      "rev": "3946f01",
+      "src": "https://github.com/nvim-lualine/lualine.nvim"
+    },
+    "nui.nvim": {
+      "rev": "de74099",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
+    },
+    "nvim-autopairs": {
+      "rev": "7a2c97c",
+      "src": "https://github.com/windwp/nvim-autopairs"
+    },
+    "nvim-lspconfig": {
+      "rev": "a89bfcf",
+      "src": "https://github.com/neovim/nvim-lspconfig"
+    },
+    "nvim-tree.lua": {
+      "rev": "64e2192",
+      "src": "https://github.com/nvim-tree/nvim-tree.lua"
+    },
+    "nvim-treesitter": {
+      "rev": "42fc28ba",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter"
+    },
+    "nvim-web-devicons": {
+      "rev": "8dcb311",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons"
+    },
+    "outline.nvim": {
+      "rev": "6b62f73",
+      "src": "https://github.com/hedyhli/outline.nvim"
+    },
+    "plenary.nvim": {
+      "rev": "b9fd522",
+      "src": "https://github.com/nvim-lua/plenary.nvim"
+    },
+    "techbase.nvim": {
+      "rev": "0da0261",
+      "src": "https://github.com/mcauley-penney/techbase.nvim"
+    },
+    "telescope.nvim": {
+      "rev": "b4da76b",
+      "src": "https://github.com/nvim-telescope/telescope.nvim"
+    }
+  }
+}

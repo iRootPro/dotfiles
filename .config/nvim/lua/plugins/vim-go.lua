@@ -1,5 +1,0 @@
-return {
-  {
-    "fatih/vim-go",
-  },
-}
