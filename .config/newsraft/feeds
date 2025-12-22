@@ -1,0 +1,8 @@
+@IT
+https://www.opennet.ru/opennews/opennews_all_utf.rss
+https://habr.com/ru/rss/articles/?fl=ru
+@NeoVim
+https://github.com/neovim/neovim/tags.atom
+https://neovim.io/news.xml
+@Go
+https://cprss.s3.amazonaws.com/golangweekly.com.xml
