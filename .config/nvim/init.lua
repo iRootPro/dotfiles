@@ -281,12 +281,11 @@ local parsers_to_install = {
 	"go", "gomod", "gowork", "gosum",
 	"python", "bash", "yaml", "json",
 }
-local installed = require("nvim-treesitter").get_installed()
 local to_install = vim.tbl_filter(function(p)
-	return not vim.list_contains(installed, p)
+	return not pcall(vim.treesitter.language.inspect, p)
 end, parsers_to_install)
 if #to_install > 0 then
-	require("nvim-treesitter").install(to_install)
+	vim.treesitter.install(to_install)
 end
 
 require("blink.cmp").setup({
