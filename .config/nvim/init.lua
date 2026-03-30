@@ -34,6 +34,7 @@ opt.list = true -- Подсвечивать пробелы в конце
 opt.listchars = { tab = "  ", trail = "·", extends = ">", precedes = "<" }
 opt.cursorline = true -- Показывать подсветку курсора линией
 opt.winborder = "rounded" -- Оформление подсказок с закруглениями
+opt.pumborder = "rounded" -- Рамка у popup-меню автодополнения (0.12)
 
 -- включение выделение парных кавычек и скобок
 opt.showmatch = true
@@ -96,6 +97,7 @@ keymap("n", "<leader>lf", vim.lsp.buf.format, { desc = "LSP format" })
 keymap("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
 keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle file tree" })
 keymap("n", "<leader>ne", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit neovim config" })
+keymap("n", "<leader>u", "<cmd>Undotree<CR>", { desc = "Undo tree (0.12)" })
 
 -- Flash (быстрая навигация)
 keymap({ "n", "x", "o" }, "s", function() require("flash").jump() end, { desc = "Flash jump" })
@@ -418,6 +420,14 @@ local function lsp_diagnostics()
 	return result
 end
 
+local function lsp_progress()
+	local status = vim.ui.progress_status()
+	if status and status ~= "" then
+		return "  " .. status .. " "
+	end
+	return ""
+end
+
 local function filetype_info()
 	local ft = vim.bo.filetype
 	if ft == "" then
@@ -469,6 +479,7 @@ vim.opt.statusline = "%!v:lua.get_statusline_components()"
 -- Делаем функции глобальными для доступа из statusline
 _G.git_branch = git_branch
 _G.lsp_diagnostics = lsp_diagnostics
+_G.lsp_progress = lsp_progress
 _G.filetype_info = filetype_info
 _G.os_logo = os_logo
 
@@ -486,7 +497,7 @@ vim.opt.statusline = ""
 	.. "%#StatusLineNC#" -- для git/diagnostics
 	.. "%{v:lua.git_branch()}" -- git ветка
 	.. "%{v:lua.lsp_diagnostics()}" -- диагностика LSP
-	.. " "
+	.. "%{v:lua.lsp_progress()}" -- прогресс LSP (0.12)
 	.. " %=" -- выравнивание вправо
 	.. "%#StatusLine#" -- правая часть
 	.. " %{v:lua.filetype_info()} "
@@ -494,3 +505,7 @@ vim.opt.statusline = ""
 -- Цвета
 vim.api.nvim_set_hl(0, "StatusLine", { bg = "#1f1f28", fg = "#dcd7ba" })
 vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "#1f1f28", fg = "#727169" })
+
+-- Экспериментальный UI для сообщений и командной строки (0.12)
+-- Убирает "Press ENTER", пейджер как буфер, подсветка командной строки
+pcall(function() require("vim._core.ui2").enable() end)
