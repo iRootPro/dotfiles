@@ -1,12 +1,12 @@
 # Dotfiles
 
-Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim + Tmux + Kitty + Starship + Zsh.
+Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Zsh.
 
 ## Что включено
 
 | Инструмент | Конфиг | Описание |
 |------------|--------|----------|
-| **Neovim** | `.config/nvim/` | Конфиг на Lua, vim.pack, LSP, DAP, Treesitter, Telescope |
+| **Neovim** | `.config/nvim/` | Конфиг на Lua, vim.pack, встроенный LSP, DAP, Treesitter, fzf-lua |
 | **Tmux** | `.config/tmux/`, `.tmux.conf` | Сессии, сплиты, TPM-плагины |
 | **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, тема Kanagawa |
 | **Alacritty** | `.config/alacritty/` | Альтернативный терминал, модульные конфиги |
