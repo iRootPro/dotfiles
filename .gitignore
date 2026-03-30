@@ -1,0 +1,15 @@
+# Lock-файлы
+.config/nvim/nvim-pack-lock.json
+
+# Бэкапы
+*.bak
+*_bak
+
+# ОС
+.DS_Store
+
+# Локальные настройки Claude
+.config/.claude/settings.local.json
+
+# Персональный gitconfig (используй .gitconfig.template)
+.gitconfig

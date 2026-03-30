@@ -50,58 +50,144 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-tree/nvim-tree.lua" },
 	{ src = "https://github.com/nvim-telescope/telescope.nvim" },
 	{ src = "https://github.com/nvim-lua/plenary.nvim" },
-	{ src = "https://github.com/MunifTanjim/nui.nvim" },
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons" },
 	{ src = "https://github.com/saghen/blink.cmp", version = vim.version.range("^1") }, -- Autocomplete
-	{ src = "https://github.com/nvim-lualine/lualine.nvim" },
 	{ src = "https://github.com/hedyhli/outline.nvim" },
 	{ src = "https://github.com/windwp/nvim-autopairs" },
 	-- Golang
 	{ src = "https://github.com/ray-x/go.nvim" },
 	{ src = "https://github.com/ray-x/guihua.lua" },
+	-- Git
+	{ src = "https://github.com/lewis6991/gitsigns.nvim" },
+	-- Debug
+	{ src = "https://github.com/mfussenegger/nvim-dap" },
+	{ src = "https://github.com/rcarriga/nvim-dap-ui" },
+	{ src = "https://github.com/leoluz/nvim-dap-go" },
+	{ src = "https://github.com/nvim-neotest/nvim-nio" },
+	{ src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
+	-- Test
+	{ src = "https://github.com/nvim-neotest/neotest" },
+	{ src = "https://github.com/fredrikaverpil/neotest-golang" },
+	-- Snippets
+	{ src = "https://github.com/rafamadriz/friendly-snippets" },
+	-- Navigation
+	{ src = "https://github.com/folke/flash.nvim" },
+	-- Diagnostics
+	{ src = "https://github.com/folke/trouble.nvim" },
+	{ src = "https://github.com/folke/todo-comments.nvim" },
+	-- Git
+	{ src = "https://github.com/sindrets/diffview.nvim" },
+	-- UI
+	{ src = "https://github.com/folke/which-key.nvim" },
 })
 
 -------------------------
 -------- Keymaps --------
 -------------------------
 local keymap = vim.keymap.set
-local s = { silent = true }
 local builtin = require("telescope.builtin")
 
-keymap("n", "<ESC>", ":nohlsearch<CR>", s) -- Отмена выделения после поиска
-keymap("n", "<C-w>", ":w!<CR>", s) -- Сохранение буфера
-keymap("n", "QQ", ":qa!<CR>", s) -- Выход
-keymap("n", "<leader>pu", ":lua vim.pack.update()<CR>") -- Обновление плагинов
-keymap("n", "<leader>r", ":so<CR>") -- Перезагрузить конфиг
-keymap("n", "<leader>lf", vim.lsp.buf.format) -- Форматирование с помощью lsp
-keymap("n", "<leader>ca", vim.lsp.buf.code_action) -- Форматирование с помощью lsp
-keymap("n", "<leader>e", ":NvimTreeToggle<CR>") -- Toggle NeoTree
-keymap("n", "<leader>ne", ":e ~/.config/nvim/init.lua<CR>") -- Редактировать конфиг neovim
+keymap("n", "<ESC>", ":nohlsearch<CR>", { silent = true, desc = "Clear search highlight" })
+keymap("n", "<C-s>", ":w!<CR>", { silent = true, desc = "Save buffer" })
+keymap("n", "QQ", ":qa!<CR>", { silent = true, desc = "Quit all" })
+keymap("n", "<leader>pu", ":lua vim.pack.update()<CR>", { desc = "Update plugins" })
+keymap("n", "<leader>r", ":so<CR>", { desc = "Reload config" })
+keymap("n", "<leader>lf", vim.lsp.buf.format, { desc = "LSP format" })
+keymap("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle file tree" })
+keymap("n", "<leader>ne", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit neovim config" })
+
+-- Flash (быстрая навигация)
+keymap({ "n", "x", "o" }, "s", function() require("flash").jump() end, { desc = "Flash jump" })
+keymap({ "n", "x", "o" }, "S", function() require("flash").treesitter() end, { desc = "Flash treesitter" })
 
 -- Telescope keymaps
 keymap({ "n" }, "<leader><leader>", builtin.find_files, { desc = "Telescope find files" })
 keymap({ "n" }, "<leader>/", builtin.live_grep, { desc = "Telescope live grep" })
 keymap({ "n" }, "<leader>fb", builtin.buffers, { desc = "Telescope buffers" })
 keymap({ "n" }, "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
-keymap({ "n" }, "gr", builtin.lsp_references)
-keymap({ "n" }, "sd", builtin.diagnostics)
-keymap({ "n" }, "gi", builtin.lsp_implementations)
-keymap({ "n" }, "gd", builtin.lsp_type_definitions)
+keymap({ "n" }, "gr", builtin.lsp_references, { desc = "LSP references" })
+keymap({ "n" }, "sd", builtin.diagnostics, { desc = "Search diagnostics" })
+keymap({ "n" }, "gI", builtin.lsp_implementations, { desc = "Go to implementations" })
+keymap({ "n" }, "gd", builtin.lsp_definitions, { desc = "Go to definition" })
+keymap({ "n" }, "gD", builtin.lsp_type_definitions, { desc = "Go to type definition" })
 
 keymap("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
 keymap("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Quickfix diagnostics" })
 keymap("n", "K", vim.lsp.buf.hover, { desc = "Show documentation" })
 
+-- Git
+keymap("n", "<leader>gg", function()
+	local buf = vim.api.nvim_create_buf(false, true)
+	local width = math.floor(vim.o.columns * 0.98)
+	local height = math.floor(vim.o.lines * 0.98)
+	vim.api.nvim_open_win(buf, true, {
+		relative = "editor",
+		width = width,
+		height = height,
+		col = math.floor((vim.o.columns - width) / 2),
+		row = math.floor((vim.o.lines - height) / 2),
+		style = "minimal",
+		border = "rounded",
+	})
+	vim.fn.termopen("lazygit", {
+		on_exit = function()
+			vim.api.nvim_buf_delete(buf, { force = true })
+		end,
+	})
+	vim.cmd("startinsert")
+end, { desc = "Lazygit" })
+
 -- Go
-vim.keymap.set("n", "<leader>gg", ":GoGenerate<CR>")
-vim.keymap.set("n", "<leader>gt", ":GoTest<CR>")
-vim.keymap.set("n", "<leader>gf", ":GoTestFunc<CR>")
-vim.keymap.set("n", "<leader>gi", ":GoImpl<CR>")
-vim.keymap.set("n", "<leader>gs", ":GoFillStruct<CR>")
+keymap("n", "<leader>gG", ":GoGenerate<CR>", { desc = "Go generate" })
+keymap("n", "<leader>gt", ":GoTest<CR>", { desc = "Go test" })
+keymap("n", "<leader>gf", ":GoTestFunc<CR>", { desc = "Go test function" })
+keymap("n", "<leader>gi", ":GoImpl<CR>", { desc = "Go implement interface" })
+keymap("n", "<leader>gs", ":GoFillStruct<CR>", { desc = "Go fill struct" })
+
+-- Debug (DAP)
+local dap = require("dap")
+local dapui = require("dapui")
+keymap("n", "<leader>db", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })
+keymap("n", "<leader>dB", function()
+	dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
+end, { desc = "Conditional breakpoint" })
+keymap("n", "<leader>dc", dap.continue, { desc = "Continue / Start" })
+keymap("n", "<leader>di", dap.step_into, { desc = "Step into" })
+keymap("n", "<leader>do", dap.step_over, { desc = "Step over" })
+keymap("n", "<leader>dO", dap.step_out, { desc = "Step out" })
+keymap("n", "<leader>dx", dap.terminate, { desc = "Terminate" })
+keymap("n", "<leader>du", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
+
+-- Test (Neotest)
+local neotest = require("neotest")
+keymap("n", "<leader>tt", function() neotest.run.run() end, { desc = "Run nearest test" })
+keymap("n", "<leader>tf", function() neotest.run.run(vim.fn.expand("%")) end, { desc = "Run file tests" })
+keymap("n", "<leader>ts", function() neotest.summary.toggle() end, { desc = "Toggle test summary" })
+keymap("n", "<leader>to", function() neotest.output_panel.toggle() end, { desc = "Toggle test output" })
+keymap("n", "<leader>td", function() neotest.run.run({ strategy = "dap" }) end, { desc = "Debug nearest test" })
+
+-- Trouble (diagnostics)
+keymap("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Diagnostics (project)" })
+keymap("n", "<leader>xd", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", { desc = "Diagnostics (buffer)" })
+keymap("n", "<leader>xl", "<cmd>Trouble loclist toggle<CR>", { desc = "Location list" })
+keymap("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Quickfix list" })
+keymap("n", "<leader>xt", "<cmd>Trouble todo toggle<CR>", { desc = "TODOs" })
+
+-- Todo-comments
+keymap("n", "]t", function() require("todo-comments").jump_next() end, { desc = "Next TODO" })
+keymap("n", "[t", function() require("todo-comments").jump_prev() end, { desc = "Previous TODO" })
+keymap("n", "<leader>ft", "<cmd>TodoTelescope<CR>", { desc = "Search TODOs" })
+
+-- Diffview
+keymap("n", "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Git diff" })
+keymap("n", "<leader>gh", "<cmd>DiffviewFileHistory %<CR>", { desc = "File git history" })
+keymap("n", "<leader>gH", "<cmd>DiffviewFileHistory<CR>", { desc = "Branch git history" })
+keymap("n", "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Close diffview" })
 
 -- Outline symbols
-keymap({ "n" }, "<leader>o", ":Outline<CR>", s)
+keymap({ "n" }, "<leader>o", ":Outline<CR>", { silent = true, desc = "Toggle outline" })
 
 -- Навигация между сплитами
 keymap("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
@@ -177,7 +263,38 @@ require("go").setup({
 
 require("blink.cmp").setup({
 	keymap = { preset = "enter" },
+	snippets = { preset = "default" },
+	sources = {
+		default = { "lsp", "path", "snippets", "buffer" },
+	},
 })
+
+require("gitsigns").setup({})
+require("which-key").setup({})
+require("flash").setup({})
+require("trouble").setup({})
+require("todo-comments").setup({})
+
+-- DAP
+require("dap-go").setup()
+require("nvim-dap-virtual-text").setup({})
+local dapui = require("dapui")
+dapui.setup({})
+-- Автоматически открывать/закрывать DAP UI при старте/остановке отладки
+local dap = require("dap")
+dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+
+-- Neotest
+require("neotest").setup({
+	adapters = {
+		require("neotest-golang"),
+	},
+})
+
+-- Snippets (friendly-snippets загружаются автоматически через blink.cmp)
+vim.g.blink_cmp_snippets = true
 
 ------------------------------
 -------- Color scheme --------
@@ -192,12 +309,27 @@ vim.cmd.colorscheme("kanagawa")
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(args)
 		local client = vim.lsp.get_client_by_id(args.data.client_id)
-		if client and client.name == "gopls" then
+		if not client then return end
+
+		-- Подсветка переменной под курсором во всех местах использования
+		if client:supports_method("textDocument/documentHighlight") then
+			local buf = args.buf
+			vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+				buffer = buf,
+				callback = vim.lsp.buf.document_highlight,
+			})
+			vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+				buffer = buf,
+				callback = vim.lsp.buf.clear_references,
+			})
+		end
+
+		if client.name == "gopls" then
 			-- Отключаем семантические токены
 			client.server_capabilities.semanticTokensProvider = nil
 			-- Принудительно включаем treesitter
 			vim.schedule(function()
-				vim.treesitter.start()
+				pcall(vim.treesitter.start)
 			end)
 		end
 	end,
@@ -215,9 +347,43 @@ vim.api.nvim_create_autocmd("VimEnter", {
 
 -- Автоформатирование при сохранении буфера
 vim.api.nvim_create_autocmd("BufWritePre", {
-	pattern = { "*.c", "*.go", "*.lua", "*.py", "*.rs", "*.js", "*.ts", "*.json", "*.yaml", "*.yml" },
+	pattern = { "*.c", "*.lua", "*.py", "*.rs", "*.js", "*.ts", "*.json", "*.yaml", "*.yml" },
 	callback = function()
 		vim.lsp.buf.format({ async = false })
+	end,
+})
+
+-- Подсветка текущего семантического блока при задержке курсора
+local scope_ns = vim.api.nvim_create_namespace("scope_highlight")
+local scope_types = {
+	function_declaration = true, method_declaration = true, func_literal = true,
+	if_statement = true, for_statement = true, short_var_declaration = true,
+	type_declaration = true, type_spec = true,
+	-- общие для многих языков
+	function_definition = true, if_expression = true, for_expression = true,
+}
+
+vim.api.nvim_create_autocmd("CursorHold", {
+	callback = function()
+		vim.api.nvim_buf_clear_namespace(0, scope_ns, 0, -1)
+		local ok, node = pcall(vim.treesitter.get_node)
+		if not ok or not node then return end
+		while node do
+			if scope_types[node:type()] then
+				local sr, _, er, _ = node:range()
+				for line = sr, er do
+					vim.api.nvim_buf_add_highlight(0, scope_ns, "ScopeHighlight", line, 0, -1)
+				end
+				break
+			end
+			node = node:parent()
+		end
+	end,
+})
+
+vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
+	callback = function()
+		vim.api.nvim_buf_clear_namespace(0, scope_ns, 0, -1)
 	end,
 })
 
@@ -226,17 +392,13 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 vim.api.nvim_set_hl(0, "LineNr", { bg = "#1f1f28", fg = "#666666" })
 vim.api.nvim_set_hl(0, "SignColumn", { bg = "#1f1f28", fg = "#938aa9" })
 vim.api.nvim_set_hl(0, "CursorLineNr", { bg = "#252530", fg = "#dcd7ba" }) -- легкое выделение
+vim.api.nvim_set_hl(0, "ScopeHighlight", { bg = "#252530" }) -- подсветка семантического блока
 
 -- Сначала объявим функции
 local function git_branch()
-	local handle = io.popen("git branch --show-current 2>/dev/null")
-	if handle then
-		local result = handle:read("*a")
-		handle:close()
-		result = result:gsub("\n", "")
-		if result ~= "" then
-			return "   " .. result .. " "
-		end
+	local branch = vim.b.gitsigns_head
+	if branch and branch ~= "" then
+		return "   " .. branch .. " "
 	end
 	return ""
 end
@@ -285,7 +447,7 @@ local function filetype_info()
 		sql = "",
 	}
 
-	local icon = icons[ft] or "" -- файл по умолчанию:w
+	local icon = icons[ft] or "" -- файл по умолчанию
 	return icon .. " " .. ft:upper()
 end
 
