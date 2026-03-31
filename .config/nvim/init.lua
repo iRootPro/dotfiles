@@ -138,7 +138,10 @@ keymap("n", "<leader>gg", function()
 end, { desc = "Lazygit" })
 
 -- Go
-keymap("n", "<leader>gG", ":!go generate ./...<CR>", { desc = "Go generate" })
+keymap("n", "<leader>gG", function()
+	vim.cmd("botright vsplit | terminal go generate ./...")
+	vim.cmd("startinsert")
+end, { desc = "Go generate" })
 keymap("n", "<leader>gs", vim.lsp.buf.code_action, { desc = "Go fill struct (code action)" })
 keymap("n", "<leader>gi", function()
 	local type_name = vim.fn.input("Type: ")
