@@ -49,7 +49,7 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
 	{ src = "https://github.com/nvim-tree/nvim-tree.lua" },
 	{ src = "https://github.com/ibhagwan/fzf-lua" },
-	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- зависимость neotest
+	{ src = "https://github.com/nvim-lua/plenary.nvim" },
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons" },
 	{ src = "https://github.com/saghen/blink.cmp", version = vim.version.range("^1") }, -- Autocomplete
 	{ src = "https://github.com/hedyhli/outline.nvim" },
@@ -62,9 +62,6 @@ vim.pack.add({
 	{ src = "https://github.com/leoluz/nvim-dap-go" },
 	{ src = "https://github.com/nvim-neotest/nvim-nio" },
 	{ src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
-	-- Test
-	{ src = "https://github.com/nvim-neotest/neotest" },
-	{ src = "https://github.com/fredrikaverpil/neotest-golang" },
 	-- Snippets
 	{ src = "https://github.com/rafamadriz/friendly-snippets" },
 	-- Navigation
@@ -172,13 +169,189 @@ keymap("n", "<leader>dO", dap.step_out, { desc = "Step out" })
 keymap("n", "<leader>dx", dap.terminate, { desc = "Terminate" })
 keymap("n", "<leader>du", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
 
--- Test (Neotest)
-local neotest = require("neotest")
-keymap("n", "<leader>tt", function() neotest.run.run() end, { desc = "Run nearest test" })
-keymap("n", "<leader>tf", function() neotest.run.run(vim.fn.expand("%")) end, { desc = "Run file tests" })
-keymap("n", "<leader>ts", function() neotest.summary.toggle() end, { desc = "Toggle test summary" })
-keymap("n", "<leader>to", function() neotest.output_panel.toggle() end, { desc = "Toggle test output" })
-keymap("n", "<leader>td", function() neotest.run.run({ strategy = "dap" }) end, { desc = "Debug nearest test" })
+-- Test (richgo)
+local test_buf = nil
+local test_win = nil
+local test_title = ""
+local test_status = "running" -- "running" | "pass" | "fail"
+
+local function get_test_name()
+	local node = vim.treesitter.get_node()
+	while node do
+		if node:type() == "function_declaration" then
+			local name_node = node:child(1)
+			if name_node then
+				local name = vim.treesitter.get_node_text(name_node, 0)
+				if name:match("^Test") then return name end
+			end
+		end
+		node = node:parent()
+	end
+	return nil
+end
+
+local function get_package_dir()
+	return vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
+end
+
+local function test_winbar()
+	if test_status == "running" then
+		return "%#DiagnosticInfo#  " .. test_title .. " ...%*"
+	elseif test_status == "pass" then
+		return "%#DiagnosticOk#  " .. test_title .. "%*"
+	else
+		return "%#DiagnosticError#  " .. test_title .. "%*"
+	end
+end
+
+local function setup_test_win()
+	vim.wo[test_win].winbar = test_winbar()
+	vim.wo[test_win].number = false
+	vim.wo[test_win].relativenumber = false
+	vim.wo[test_win].signcolumn = "no"
+	vim.wo[test_win].winfixheight = true
+	vim.keymap.set("n", "q", function()
+		if test_win and vim.api.nvim_win_is_valid(test_win) then
+			vim.api.nvim_win_close(test_win, true)
+			test_win = nil
+		end
+	end, { buffer = test_buf, silent = true })
+end
+
+local function run_test_cmd(cmd, title)
+	local pkg_dir = get_package_dir()
+	if test_win and vim.api.nvim_win_is_valid(test_win) then
+		vim.api.nvim_win_close(test_win, true)
+	end
+	if test_buf and vim.api.nvim_buf_is_valid(test_buf) then
+		vim.api.nvim_buf_delete(test_buf, { force = true })
+	end
+	test_title = title
+	test_status = "running"
+	test_buf = vim.api.nvim_create_buf(false, true)
+	vim.cmd("botright 15split")
+	test_win = vim.api.nvim_get_current_win()
+	vim.api.nvim_win_set_buf(test_win, test_buf)
+	vim.fn.termopen(cmd, {
+		cwd = pkg_dir,
+		on_exit = function(_, code)
+			vim.schedule(function()
+				test_status = code == 0 and "pass" or "fail"
+				if test_win and vim.api.nvim_win_is_valid(test_win) then
+					vim.wo[test_win].winbar = test_winbar()
+				end
+				if code == 0 then
+					vim.notify("  " .. title, vim.log.levels.INFO)
+				else
+					vim.notify("  " .. title, vim.log.levels.ERROR)
+				end
+			end)
+		end,
+	})
+	setup_test_win()
+	vim.cmd("wincmd p")
+end
+
+keymap("n", "<leader>tt", function()
+	local name = get_test_name()
+	if not name then
+		vim.notify("Курсор не на тесте", vim.log.levels.WARN)
+		return
+	end
+	run_test_cmd("richgo test -v -count=1 -run ^" .. name .. "$ .", name)
+end, { desc = "Run nearest test" })
+
+keymap("n", "<leader>tf", function()
+	local pkg = vim.fn.fnamemodify(vim.fn.expand("%:p:h"), ":t")
+	run_test_cmd("richgo test -v -count=1 .", pkg)
+end, { desc = "Run package tests" })
+
+keymap("n", "<leader>to", function()
+	if test_win and vim.api.nvim_win_is_valid(test_win) then
+		vim.api.nvim_win_close(test_win, true)
+		test_win = nil
+	elseif test_buf and vim.api.nvim_buf_is_valid(test_buf) then
+		vim.cmd("botright 15split")
+		test_win = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(test_win, test_buf)
+		setup_test_win()
+		vim.cmd("wincmd p")
+	end
+end, { desc = "Toggle test output" })
+
+-- Coverage
+local cov_ns = vim.api.nvim_create_namespace("go_coverage")
+
+local function parse_coverprofile(file)
+	local lines = {}
+	for line in io.lines(file) do
+		if not line:match("^mode:") then
+			-- test.com/file.go:5.43,8.18 3 1
+			local src, sl, el, count = line:match("^(.+):(%d+)%.%d+,(%d+)%.%d+ %d+ (%d+)$")
+			if src then
+				table.insert(lines, { src = src, sl = tonumber(sl), el = tonumber(el), count = tonumber(count) })
+			end
+		end
+	end
+	return lines
+end
+
+local function apply_coverage(coverfile, pkg_dir)
+	local entries = parse_coverprofile(coverfile)
+	-- Собрать покрытие по имени файла
+	local by_file = {}
+	for _, e in ipairs(entries) do
+		-- test.com/binarysearch.go -> binarysearch.go
+		local filename = e.src:match("[^/]+$")
+		if filename then
+			if not by_file[filename] then by_file[filename] = {} end
+			table.insert(by_file[filename], e)
+		end
+	end
+	-- Применить подсветку к открытым буферам
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_loaded(buf) then
+			local bufname = vim.api.nvim_buf_get_name(buf)
+			local buf_filename = bufname:match("[^/]+$")
+			if buf_filename and by_file[buf_filename] and bufname:find(pkg_dir, 1, true) then
+				vim.api.nvim_buf_clear_namespace(buf, cov_ns, 0, -1)
+				for _, e in ipairs(by_file[buf_filename]) do
+					local hl = e.count > 0 and "DiagnosticVirtualTextOk" or "DiagnosticVirtualTextError"
+					for l = e.sl, e.el do
+						pcall(vim.api.nvim_buf_add_highlight, buf, cov_ns, hl, l - 1, 0, -1)
+					end
+				end
+			end
+		end
+	end
+	os.remove(coverfile)
+end
+
+keymap("n", "<leader>tc", function()
+	local pkg_dir = get_package_dir()
+	local coverfile = vim.fn.tempname()
+	run_test_cmd("richgo test -v -coverprofile=" .. coverfile .. " -count=1 .", "coverage")
+	-- Ждём завершения и применяем покрытие
+	vim.api.nvim_create_autocmd("TermClose", {
+		buffer = test_buf,
+		once = true,
+		callback = function()
+			vim.schedule(function()
+				if vim.fn.filereadable(coverfile) == 1 then
+					apply_coverage(coverfile, pkg_dir)
+					vim.notify("  Покрытие применено", vim.log.levels.INFO)
+				end
+			end)
+		end,
+	})
+end, { desc = "Run tests with coverage" })
+
+keymap("n", "<leader>tC", function()
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		vim.api.nvim_buf_clear_namespace(buf, cov_ns, 0, -1)
+	end
+	vim.notify("Покрытие очищено", vim.log.levels.INFO)
+end, { desc = "Clear coverage" })
 
 -- Trouble (diagnostics)
 keymap("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Diagnostics (project)" })
@@ -316,12 +489,6 @@ dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() 
 dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
 dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
 
--- Neotest
-require("neotest").setup({
-	adapters = {
-		require("neotest-golang"),
-	},
-})
 
 -- Snippets (friendly-snippets загружаются автоматически через blink.cmp)
 vim.g.blink_cmp_snippets = true
