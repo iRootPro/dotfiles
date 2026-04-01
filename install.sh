@@ -36,18 +36,18 @@ install_packages() {
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     green "Установка пакетов через brew..."
-    brew install "${packages[@]}" 2>/dev/null || true
+    brew install "${packages[@]}" zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
 
   elif [ "$OS" = "Linux" ]; then
     if command -v apt &>/dev/null; then
       green "Установка пакетов через apt..."
       sudo apt update -qq
-      sudo apt install -y -qq neovim tmux fzf ripgrep fd-find bat jq direnv 2>/dev/null || true
+      sudo apt install -y -qq neovim tmux fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
       # Пакеты которых нет в apt — через cargo/go/binary
       install_from_binary
     elif command -v dnf &>/dev/null; then
       green "Установка пакетов через dnf..."
-      sudo dnf install -y neovim tmux fzf ripgrep fd-find bat jq direnv 2>/dev/null || true
+      sudo dnf install -y neovim tmux fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
       install_from_binary
     elif command -v pacman &>/dev/null; then
       green "Установка пакетов через pacman..."
