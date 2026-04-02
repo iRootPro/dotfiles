@@ -1,6 +1,6 @@
 # Dotfiles
 
-Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Zsh.
+Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Fish.
 
 ## Что включено
 
@@ -11,7 +11,8 @@
 | **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, тема Kanagawa |
 | **Alacritty** | `.config/alacritty/` | Альтернативный терминал, модульные конфиги |
 | **Starship** | `.config/starship/` | Кросс-платформенный промпт, тема Kanagawa |
-| **Zsh** | `.zshrc` | Oh-My-Zsh, zoxide, fzf, zsh-syntax-highlighting |
+| **Fish** | `.config/fish/` | Основной шелл, starship, zoxide, fzf, direnv |
+| **Zsh** | `.zshrc` | Альтернативный шелл, zsh-syntax-highlighting |
 | **Git** | `.gitconfig.template`, `.config/git/` | Delta (side-by-side diff), глобальный gitignore |
 | **Bat** | `.config/bat/` | `cat` с подсветкой синтаксиса |
 | **Btop** | `.config/btop/` | Системный монитор |
@@ -22,7 +23,7 @@
 ## Требования
 
 - **macOS** или **Linux** (Ubuntu, Fedora, Arch)
-- **Zsh** (основной шелл)
+- **Fish** (основной шелл)
 - **Git**
 - [Homebrew](https://brew.sh) (macOS) или системный пакетный менеджер (Linux)
 
@@ -49,6 +50,7 @@ cd ~/dotfiles
 │   ├── alacritty/       # конфиг Alacritty
 │   ├── bat/             # конфиг bat
 │   ├── btop/            # конфиг btop
+│   ├── fish/            # конфиг Fish shell
 │   ├── git/             # глобальный gitignore
 │   ├── kitty/           # конфиг Kitty
 │   ├── nvim/            # конфиг Neovim (init.lua)

@@ -1,40 +1,26 @@
 # Neovim Configuration
 
-Конфиг: `~/.config/nvim/init.lua` | Алиас: `nv` | Тема: kanagawa | Менеджер плагинов: vim.pack | Neovim 0.12+
+Конфиг: `~/.config/nvim/init.lua` | Тема: kanagawa | Менеджер плагинов: vim.pack | Neovim 0.12+
 
 ## Плагины
 
 | Плагин | Назначение |
 |--------|-----------|
 | kanagawa.nvim | Цветовая схема |
-| nvim-treesitter | Подсветка синтаксиса и индентация по AST |
-| nvim-tree.lua | Файловый менеджер (дерево) |
-| fzf-lua | Fuzzy-поиск файлов, grep, буферов, LSP |
+| nvim-treesitter | Установка и управление парсерами |
+| snacks.nvim | Picker (файлы, grep, буферы), Explorer (дерево файлов) |
 | blink.cmp | Автодополнение (Enter для выбора) |
 | outline.nvim | Панель символов (функции, структуры) |
 | nvim-autopairs | Автозакрытие скобок и кавычек |
-| gitsigns.nvim | Git-знаки в gutter, ветка для statusline |
-| nvim-dap | Отладка через DAP (Debug Adapter Protocol) |
-| nvim-dap-ui | UI для отладки (переменные, стек, брейкпоинты) |
-| nvim-dap-go | Go-конфигурация для DAP (delve) |
-| nvim-dap-virtual-text | Значения переменных прямо в коде при отладке |
-| neotest | Фреймворк для запуска тестов с UI |
-| neotest-golang | Go-адаптер для neotest |
-| friendly-snippets | Готовые сниппеты для Go и других языков |
-| flash.nvim | Мгновенная навигация по экрану в 2-3 нажатия |
-| trouble.nvim | Панель ошибок/предупреждений/TODO проекта |
-| todo-comments.nvim | Подсветка и поиск TODO/FIXME/HACK в коде |
-| diffview.nvim | Просмотр git diff, история файла/ветки |
+| gitsigns.nvim | Git-знаки в gutter, навигация по hunkам, blame |
+| conform.nvim | Форматирование при сохранении (goimports, stylua, prettier...) |
+| oil.nvim | Редактирование файловой системы как буфер |
 | which-key.nvim | Popup с описаниями хоткеев при нажатии Leader |
 | nvim-web-devicons | Иконки для файлов |
-
-### Что убрано (заменено встроенным в Neovim 0.12)
-
-| Было | Стало |
-|------|-------|
-| nvim-lspconfig | `vim.lsp.config()` + `vim.lsp.enable()` — встроенная конфигурация LSP |
-| telescope.nvim + plenary.nvim | fzf-lua — быстрее, без зависимостей |
-| go.nvim + guihua.lua | gopls напрямую через LSP + CLI-утилита `impl` |
+| nvim-dap | Debug Adapter Protocol — клиент для дебаггеров |
+| nvim-dap-go | Автоконфигурация DAP для Go (delve) |
+| nvim-dap-ui | Визуальный UI для дебага (переменные, стек, breakpoints) |
+| nvim-nio | Async IO библиотека (зависимость dap-ui) |
 
 ## Хоткеи
 
@@ -43,25 +29,15 @@
 | Хоткей | Действие |
 |--------|----------|
 | `Space` | Leader |
-| `Ctrl+S` | Сохранить |
+| `Ctrl+W` | Сохранить |
 | `QQ` | Выйти без сохранения |
 | `ESC` | Убрать подсветку поиска |
-| `K` | Документация по символу (hover) |
+| `K` | Документация по символу (hover) — встроенный |
 | `Leader r` | Перезагрузить конфиг |
 | `Leader ne` | Открыть конфиг neovim для редактирования |
 | `Leader pu` | Обновить плагины |
-| `Leader u` | Дерево отмен (встроенный Undotree, 0.12) |
 
-### Навигация (Flash)
-
-| Хоткей | Действие |
-|--------|----------|
-| `s` | Flash jump — вводишь 1-2 символа, потом метку для прыжка |
-| `S` | Flash treesitter — выделение по AST-узлам |
-
-Работает в normal, visual и operator-pending режимах. Например `ds)` — удалить до символа через flash.
-
-### Файлы и поиск (fzf-lua)
+### Файлы и поиск (snacks.nvim)
 
 | Хоткей | Действие |
 |--------|----------|
@@ -69,82 +45,81 @@
 | `Leader /` | Поиск по содержимому (live grep) |
 | `Leader fb` | Открытые буферы |
 | `Leader fh` | Поиск по справке |
-| `Leader e` | Открыть/закрыть дерево файлов |
+| `Leader sd` | Поиск по диагностике |
+| `Leader e` | Открыть/закрыть дерево файлов (explorer) |
+| `-` | Открыть родительскую директорию (oil.nvim) |
 | `Leader o` | Открыть/закрыть панель символов |
 
-### LSP и код
+### LSP и код (встроенные 0.12 + кастомные)
+
+| Хоткей | Действие | Источник |
+|--------|----------|----------|
+| `gd` | Перейти к определению | кастомный |
+| `gD` | Перейти к объявлению | кастомный |
+| `grr` | Показать все ссылки | встроенный 0.12 |
+| `gri` | Показать реализации интерфейса | встроенный 0.12 |
+| `grt` | Перейти к определению типа | встроенный 0.12 |
+| `grn` | Переименовать символ | встроенный 0.12 |
+| `gra` | Code action | встроенный 0.12 |
+| `grx` | Запуск code lens | встроенный 0.12 |
+| `gO` | Символы документа | встроенный 0.12 |
+| `Ctrl+S` (insert) | Signature help | встроенный 0.12 |
+| `Leader lf` | Форматировать файл (conform) | кастомный |
+| `Leader ld` | Показать диагностику в popup | кастомный |
+| `Leader q` | Диагностика в quickfix | кастомный |
+
+### Git (gitsigns)
 
 | Хоткей | Действие |
 |--------|----------|
-| `gd` | Перейти к определению |
-| `gD` | Перейти к определению типа |
-| `gI` | Показать все реализации интерфейса |
-| `gr` | Показать все ссылки |
-| `sd` | Поиск по диагностике |
-| `Leader rn` | Переименовать символ |
-| `Leader ca` | Code action |
-| `Leader lf` | Форматировать файл |
-| `Leader d` | Показать диагностику в popup |
-| `Leader q` | Диагностика в quickfix |
-
-### Git
-
-| Хоткей | Действие |
-|--------|----------|
-| `Leader gg` | Lazygit (плавающее окно) |
-| `Leader gd` | Git diff (все изменения) |
-| `Leader gh` | История текущего файла |
-| `Leader gH` | История всей ветки |
-| `Leader gx` | Закрыть diffview |
-
-### Trouble (диагностика и TODO)
-
-| Хоткей | Действие |
-|--------|----------|
-| `Leader xx` | Все ошибки проекта |
-| `Leader xd` | Ошибки текущего файла |
-| `Leader xl` | Location list |
-| `Leader xq` | Quickfix list |
-| `Leader xt` | Все TODO/FIXME/HACK в проекте |
-| `Leader ft` | Поиск TODO через fzf-lua |
-| `]t` / `[t` | Следующий / предыдущий TODO |
-
-### Отладка (DAP)
-
-Требуется [delve](https://github.com/go-delve/delve): `go install github.com/go-delve/delve/cmd/dlv@latest`
-
-| Хоткей | Действие |
-|--------|----------|
-| `Leader db` | Поставить/убрать брейкпоинт |
-| `Leader dB` | Условный брейкпоинт (с вводом условия) |
-| `Leader dc` | Продолжить / Запустить отладку |
-| `Leader di` | Step into (войти в функцию) |
-| `Leader do` | Step over (перешагнуть) |
-| `Leader dO` | Step out (выйти из функции) |
-| `Leader dx` | Остановить отладку |
-| `Leader du` | Открыть/закрыть панель отладки |
-
-DAP UI открывается автоматически при старте отладки и закрывается при завершении.
-
-### Тесты (Neotest)
-
-| Хоткей | Действие |
-|--------|----------|
-| `Leader tt` | Запустить ближайший тест |
-| `Leader tf` | Запустить все тесты в файле |
-| `Leader ts` | Открыть/закрыть summary тестов |
-| `Leader to` | Открыть/закрыть вывод тестов |
-| `Leader td` | Запустить ближайший тест в режиме отладки (DAP) |
+| `]c` | Следующий hunk |
+| `[c` | Предыдущий hunk |
+| `Leader hs` | Stage hunk |
+| `Leader hr` | Reset hunk |
+| `Leader hu` | Undo stage hunk |
+| `Leader hp` | Preview hunk |
+| `Leader hb` | Blame line |
 
 ### Go-разработка
 
 | Хоткей | Действие |
 |--------|----------|
-| `Leader gG` | go generate |
-| `Leader gi` | Имплементировать интерфейс (через CLI `impl`) |
-| `Leader gs` | Заполнить struct (gopls code action) |
+| `Leader gg` | go generate |
+| `Leader gt` | go test |
+| `Leader gf` | Тест текущей функции |
+| `Leader gi` | Имплементировать интерфейс |
+| `Leader gs` | Заполнить struct |
 
-Go-тесты запускаются через neotest (`Leader tt`, `Leader tf`).
+### Дебаг (nvim-dap + delve)
+
+Требуется: `go install github.com/go-delve/delve/cmd/dlv@latest`
+
+| Хоткей | Действие |
+|--------|----------|
+| `Leader db` | Поставить/убрать breakpoint |
+| `Leader dt` | Дебаг ближайшего теста |
+| `Leader dl` | Дебаг последнего теста |
+| `Leader du` | Показать/скрыть DAP UI |
+| `Leader dx` | Остановить дебаг |
+
+Во время активной дебаг-сессии включаются однокнопочные кейбинды:
+
+| Клавиша | Действие |
+|---------|----------|
+| `n` | Step over (следующая строка) |
+| `s` | Step into (войти в функцию) |
+| `o` | Step out (выйти из функции) |
+| `c` | Continue (до следующего breakpoint) |
+| `x` | Terminate (завершить сессию) |
+
+При завершении дебага кейбинды автоматически снимаются.
+
+### Выделение (встроенные 0.12)
+
+| Хоткей | Режим | Действие |
+|--------|-------|----------|
+| `an` | Visual | Расширить выделение (treesitter node) |
+| `in` | Visual | Сузить выделение (treesitter node) |
 
 ### Окна и сплиты
 
@@ -157,75 +132,39 @@ Go-тесты запускаются через neotest (`Leader tt`, `Leader tf
 | `Leader wc` | Закрыть окно |
 | `Leader wo` | Закрыть все остальные окна |
 
+### Документация
+
+| Хоткей | Действие |
+|--------|----------|
+| `Leader ?` | README dotfiles |
+| `Leader ?n` | Документация Neovim |
+| `Leader ?z` | Документация Zsh |
+| `Leader ?k` | Документация Kitty |
+
 ## LSP-серверы
 
-Настроены напрямую через `vim.lsp.config()` (без nvim-lspconfig):
+Настроены через `vim.lsp.config()` + `vim.lsp.enable()` (без nvim-lspconfig):
 
 | Сервер | Язык | Особенности |
 |--------|------|-------------|
-| gopls | Go | gofumpt, staticcheck, analyses (unusedparams, shadow) |
-| lua_ls | Lua | |
+| gopls | Go | gofumpt, staticcheck, analyses (unusedparams, shadow), semantic tokens отключены |
+| lua_ls | Lua | LuaJIT runtime, workspace = neovim runtime files |
 | clangd | C/C++ | |
 | yamlls | YAML | |
 
-## Сниппеты
+## Форматирование (conform.nvim)
 
-В автодополнении (blink.cmp) доступны готовые сниппеты из friendly-snippets. Начни вводить префикс и выбери сниппет из списка.
+Автоформат при сохранении. Если нет форматтера — fallback на LSP.
 
-Полезные Go-сниппеты:
-
-| Префикс | Что вставляет |
-|---------|--------------|
-| `iferr` | `if err != nil { return err }` |
-| `func` | Объявление функции |
-| `meth` | Метод с ресивером |
-| `st` | Объявление struct |
-| `inf` | Объявление interface |
-| `for` | Цикл for |
-| `forr` | Цикл for range |
-| `tst` | Табличный тест |
-| `hf` | HTTP handler func |
-
-## Автоматика
-
-| Что происходит | Когда |
-|---------------|-------|
-| Go: формат + организация импортов | При сохранении `.go` файлов (gopls organizeImports + format) |
-| Форматирование кода | При сохранении (C, Lua, Python, Rust, JS, TS, JSON, YAML) |
-| Подсветка переменной под курсором | При задержке курсора — все использования подсвечиваются |
-| Подсветка семантического блока | При задержке курсора — весь текущий блок (функция, if, for) подсвечивается |
-| Treesitter поверх LSP | При подключении gopls (обход конфликта семантических токенов) |
-| Создание undo-директории | При первом запуске |
-
-## Statusline
-
-Кастомный statusline (без lualine), глобальный на все окна:
-
-```
-[OS] MODE | filename [+] [git branch] [ERR N] [WARN N] [LSP progress]          ICON FILETYPE
-```
-
-- Иконка ОС (macOS/Linux/Windows/BSD)
-- Текущий режим (NORMAL/INSERT/VISUAL)
-- Имя файла с модификаторами
-- Git-ветка (через gitsigns)
-- Счётчик ошибок и предупреждений LSP
-- Прогресс LSP-операций (0.12)
-- Иконка и тип файла
-
-## Фичи Neovim 0.12
-
-| Фича | Описание |
-|------|----------|
-| `pumborder` | Рамка у popup-меню автодополнения (rounded) |
-| LSP progress | Прогресс LSP-операций в statusline |
-| `:Undotree` (`Leader u`) | Встроенное визуальное дерево отмен |
-| `ui2` | Экспериментальный UI: убирает "Press ENTER", подсветка командной строки |
-| `grt` | Переход к определению типа (встроенный маппинг) |
-| `grx` | Запуск code lens (встроенный маппинг) |
-| `v_an` / `v_in` | Инкрементальное расширение/сужение выделения |
-| `v_]n` / `v_[n` | Выделение treesitter-узлов |
-| `:restart` | Перезапуск Neovim без потери UI |
+| Язык | Форматтер |
+|------|-----------|
+| Go | goimports + gofmt |
+| Lua | stylua |
+| Python | ruff (fallback: black) |
+| C/C++ | clang-format |
+| JS/TS | prettier |
+| JSON/YAML | prettier |
+| Rust | rustfmt |
 
 ## Настройки
 
@@ -234,33 +173,24 @@ Go-тесты запускаются через neotest (`Leader tt`, `Leader tf
 | Отступы | 2 пробела |
 | Нумерация строк | Да |
 | Системный буфер обмена | Да |
-| Undo | Бесконечный (сохраняется между сессиями) |
+| Undo | Бесконечный (между сессиями) |
 | Swap-файлы | Отключены |
 | Прокрутка | Отступ 8 строк от края |
 | Подсветка курсора | Линия |
-| Парные скобки | Подсветка при наведении |
 | Бордеры окон | Закруглённые |
-| Popup-меню | С рамкой (rounded) |
-| Пробелы в конце строк | Показываются как `·` |
+| Пробелы в конце строк | `·` |
 
 ## Treesitter
 
-Установлены парсеры: C, C++, Lua, Vim, Go (go/gomod/gowork/gosum), Python, Bash, YAML, JSON. Новые парсеры устанавливаются автоматически.
+Парсеры: C, C++, Lua, Vim, Vimdoc, Query, Go (go/gomod/gowork/gosum), Python, Bash, YAML, JSON.
+Подсветка через нативный `vim.treesitter.start()` (FileType autocmd).
 
-## Обслуживание
+## Statusline
 
-```bash
-# Обновить плагины (внутри neovim)
-:lua vim.pack.update()
-# или хоткей: Leader pu
+Кастомный (без lualine), глобальный (`laststatus = 3`):
 
-# Перезагрузить конфиг (внутри neovim)
-:so
-# или хоткей: Leader r
-
-# Установить delve для отладки Go
-go install github.com/go-delve/delve/cmd/dlv@latest
-
-# Установить impl для генерации интерфейсов
-go install github.com/josharian/impl@latest
 ```
+[OS] MODE | filename [+] [git branch] [ERR N] [WARN N]          ICON FILETYPE
+```
+
+Git-ветка через `vim.b.gitsigns_head` (без subprocess).

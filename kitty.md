@@ -49,6 +49,7 @@
 
 | Параметр | Значение | Зачем |
 |----------|----------|-------|
+| Shell | fish (`/opt/homebrew/bin/fish`) | Запускает fish вместо дефолтного шелла |
 | Шрифт | MesloLGLDZ Nerd Font Mono, 14pt | Nerd Font для иконок в starship/nvim |
 | Курсор | Block | Блочный курсор |
 | Декорации окна | Скрыты | Чистый вид без titlebar |
