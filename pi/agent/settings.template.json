@@ -1,0 +1,15 @@
+{
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "high",
+  "enableSkillCommands": true,
+  "packages": [
+    "npm:@plannotator/pi-extension@0.19.24",
+    "npm:pi-subagents@0.25.0",
+    "npm:@devkade/pi-plan@0.2.2",
+    "npm:@sentiolabs/pi-frontend-design@0.1.1"
+  ],
+  "warnings": {
+    "anthropicExtraUsage": true
+  }
+}
