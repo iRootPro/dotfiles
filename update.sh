@@ -12,19 +12,45 @@ step() {
   green "── $1 ──"
 }
 
+usage() {
+  cat <<'EOF'
+Usage: ./update.sh [plugins|packages|nvim|zsh|tmux|go|all]
+
+Default: plugins
+
+Modes:
+  plugins   Update Neovim, Zsh, Tmux plugins and Go dev tools
+  packages  Update system packages only, with confirmation
+  all       Run packages + plugins
+EOF
+}
+
+confirm_packages() {
+  if [ "${DOTFILES_ASSUME_YES:-}" = "1" ]; then
+    return 0
+  fi
+
+  yellow "System package updates may upgrade many packages. Continue? [y/N]"
+  IFS= read -r answer
+  case "$answer" in
+    y|Y|yes|YES) return 0 ;;
+    *) yellow "  Пропущено"; return 1 ;;
+  esac
+}
+
 # --- Пакетный менеджер ---
 update_packages() {
   step "Пакеты"
+  confirm_packages || return 0
+
   if [ "$OS" = "Darwin" ]; then
     brew update && brew upgrade
-    brew cleanup
   elif command -v apt &>/dev/null; then
     sudo apt update -qq && sudo apt upgrade -y -qq
-    sudo apt autoremove -y -qq
   elif command -v dnf &>/dev/null; then
     sudo dnf upgrade -y
   elif command -v pacman &>/dev/null; then
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Syu
   fi
 }
 
@@ -55,6 +81,13 @@ update_tmux() {
   fi
 }
 
+update_plugins() {
+  update_nvim
+  update_zinit
+  update_tmux
+  update_go
+}
+
 # --- Go утилиты ---
 update_go() {
   step "Go утилиты"
@@ -71,17 +104,25 @@ update_go() {
 
 # --- Main ---
 main() {
+  local mode="${1:-plugins}"
+
   echo ""
   green "╔══════════════════════════════════╗"
   green "║     Dotfiles Updater             ║"
   green "║     OS: $OS                      ║"
   green "╚══════════════════════════════════╝"
 
-  update_packages
-  update_nvim
-  update_zinit
-  update_tmux
-  update_go
+  case "$mode" in
+    packages) update_packages ;;
+    plugins) update_plugins ;;
+    nvim) update_nvim ;;
+    zsh) update_zinit ;;
+    tmux) update_tmux ;;
+    go) update_go ;;
+    all) update_packages; update_plugins ;;
+    -h|--help|help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
 
   echo ""
   green "═══════════════════════════════════"

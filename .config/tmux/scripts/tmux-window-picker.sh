@@ -3,6 +3,7 @@ set -euo pipefail
 
 self="$0"
 mode="${1:-pick}"
+fzf_colors='bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#89b4fa,fg:#cdd6f4,header:#6c7086,info:#6c7086,pointer:#cba6f7,marker:#a6e3a1,fg+:#cdd6f4,prompt:#89b4fa,hl+:#cba6f7,border:#45475a,label:#cba6f7'
 
 list_windows() {
   local current_window
@@ -10,22 +11,24 @@ list_windows() {
 
   tmux list-windows -a -F '#{session_id}	#{window_id}	#{pane_id}	#{session_name}	#{window_index}	#{window_name}	#{window_panes}	#{?window_active,1,0}	#{pane_current_command}	#{pane_current_path}' |
     while IFS=$'\t' read -r session_id window_id pane_id session_name window_index window_name window_panes window_active pane_command pane_path; do
-      local marker active_label label
+      local marker active_label label display_path
       marker=" "
       active_label=""
 
       [ "$window_id" = "$current_window" ] && marker="●"
       [ "$window_active" = "1" ] && active_label=" active"
+      display_path="$pane_path"
+      if [[ "$display_path" == "$HOME"* ]]; then
+        display_path="~${display_path#$HOME}"
+      fi
 
-      label="$(printf '%s \033[34m%-18s\033[0m \033[35m#%-2s\033[0m %-22s \033[33m%-10s\033[0m \033[90m%2s panes%s\033[0m  %s' \
+      label="$(printf '%s \033[35m#%-2s\033[0m %-18s \033[33m%-10s\033[0m \033[90m%s%s\033[0m' \
         "$marker" \
-        "$session_name" \
         "$window_index" \
         "$window_name" \
         "$pane_command" \
-        "$window_panes" \
-        "$active_label" \
-        "$pane_path")"
+        "$display_path" \
+        "$active_label")"
 
       printf "'%s'\t%s\t%s\t%b\n" "$session_id" "$window_id" "$pane_id" "$label"
     done
@@ -56,24 +59,22 @@ pick_window() {
   local selected session_id window_id
 
   selected="$(
-    list_windows | fzf-tmux -p 88%,78% \
+    list_windows | fzf-tmux -p 64%,42% \
       --ansi \
       --no-sort \
       --delimiter=$'\t' \
       --with-nth=4 \
       --border \
-      --border-label=' tmux windows ' \
-      --prompt=' windows  ' \
+      --border-label=' tmux · windows ' \
+      --prompt='window › ' \
       --pointer='▶' \
       --marker='✓' \
       --info=inline-right \
       --layout=reverse \
-      --header='Enter: switch  Ctrl-R: reload  Ctrl-D: close selected  Esc: cancel' \
-      --preview-window='right:58%,border-left' \
-      --preview='tmux display-message -p -t {2} "Session: #{session_name}  Window: #{window_index}:#{window_name}  Panes: #{window_panes}  Command: #{pane_current_command}" 2>/dev/null; printf "\n"; tmux capture-pane -ep -t {3} -S -120 2>/dev/null' \
+      --header='enter switch · c-r reload · c-d close · esc cancel' \
       --bind="ctrl-r:reload($self list)" \
       --bind="ctrl-d:execute-silent($self kill {1} {2})+reload($self list)" \
-      --color='bg+:#363a4f,bg:#24273a,spinner:#f4dbd6,hl:#ed8796,fg:#cad3f5,header:#ed8796,info:#c6a0f6,pointer:#f4dbd6,marker:#a6da95,fg+:#cad3f5,prompt:#8aadf4,hl+:#ed8796,border:#6e738d,label:#c6a0f6'
+      --color="$fzf_colors"
   )" || exit 0
 
   [ -n "$selected" ] || exit 0

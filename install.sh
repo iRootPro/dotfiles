@@ -12,11 +12,21 @@ red() { printf "\033[31m%s\033[0m\n" "$1"; }
 # --- Симлинк с бэкапом ---
 link() {
   local src="$1" dst="$2"
+  local backup
+
+  mkdir -p "$(dirname "$dst")"
+
+  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+    green "  ✓ $dst уже настроен"
+    return
+  fi
+
   if [ -L "$dst" ]; then
     rm "$dst"
   elif [ -e "$dst" ]; then
-    yellow "  Бэкап: $dst → ${dst}.bak"
-    mv "$dst" "${dst}.bak"
+    backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+    yellow "  Бэкап: $dst → $backup"
+    mv "$dst" "$backup"
   fi
   ln -s "$src" "$dst"
   green "  ✓ $dst → $src"
@@ -25,9 +35,9 @@ link() {
 # --- Установка пакетов ---
 install_packages() {
   local packages=(
-    neovim tmux starship zoxide fzf
-    bat eza fd ripgrep git-delta direnv
-    lazygit btop jq sesh
+    neovim tmux fish kitty starship zoxide fzf
+    bat eza fd ripgrep git-delta direnv gitmux
+    lazygit btop jq sesh go
   )
 
   if [ "$OS" = "Darwin" ]; then
@@ -42,16 +52,16 @@ install_packages() {
     if command -v apt &>/dev/null; then
       green "Установка пакетов через apt..."
       sudo apt update -qq
-      sudo apt install -y -qq neovim tmux fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+      sudo apt install -y -qq neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
       # Пакеты которых нет в apt — через cargo/go/binary
       install_from_binary
     elif command -v dnf &>/dev/null; then
       green "Установка пакетов через dnf..."
-      sudo dnf install -y neovim tmux fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+      sudo dnf install -y neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
       install_from_binary
     elif command -v pacman &>/dev/null; then
       green "Установка пакетов через pacman..."
-      sudo pacman -S --noconfirm neovim tmux fzf ripgrep fd bat eza git-delta starship zoxide jq direnv lazygit btop 2>/dev/null || true
+      sudo pacman -S --noconfirm neovim tmux fish kitty fzf ripgrep fd bat eza git-delta starship zoxide jq direnv lazygit btop go 2>/dev/null || true
     else
       red "Неизвестный пакетный менеджер. Установи пакеты вручную."
       return 1
@@ -94,6 +104,11 @@ install_from_binary() {
   if ! command -v btop &>/dev/null; then
     sudo apt install -y btop 2>/dev/null || sudo dnf install -y btop 2>/dev/null || yellow "  btop: установи вручную"
   fi
+  # gitmux
+  if ! command -v gitmux &>/dev/null; then
+    yellow "Установка gitmux..."
+    go install github.com/arl/gitmux@latest 2>/dev/null || yellow "  Пропущено (нужен go)"
+  fi
   # bat на Ubuntu называется batcat
   if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
     sudo ln -sf "$(which batcat)" /usr/local/bin/bat
@@ -110,8 +125,29 @@ install_from_binary() {
 link_configs() {
   green "Линковка конфигов..."
 
-  # ~/.config → dotfiles/.config
-  link "$DOTFILES/.config" "$HOME/.config"
+  mkdir -p "$HOME/.config"
+
+  local config_dirs=(
+    agents
+    alacritty
+    bat
+    btop
+    fish
+    kitty
+    lofi-player
+    mc
+    nvim
+    opencode
+    sesh
+    sketchybar
+    starship
+    tmux
+  )
+
+  for dir in "${config_dirs[@]}"; do
+    [ -e "$DOTFILES/.config/$dir" ] || continue
+    link "$DOTFILES/.config/$dir" "$HOME/.config/$dir"
+  done
 
   # Файлы в домашней директории
   link "$DOTFILES/.zshrc" "$HOME/.zshrc"
@@ -130,6 +166,26 @@ link_configs() {
     link "$DOTFILES/.skhdrc" "$HOME/.skhdrc"
     link "$DOTFILES/.yabairc" "$HOME/.yabairc"
   fi
+}
+
+# --- Tmux Plugin Manager ---
+install_tpm() {
+  local tpm_dir="$HOME/.config/tmux/plugins/tpm"
+
+  if [ -x "$tpm_dir/tpm" ]; then
+    green "TPM уже установлен"
+    return
+  fi
+
+  if ! command -v git &>/dev/null; then
+    yellow "Git не найден — TPM пропущен"
+    return
+  fi
+
+  yellow "Установка TPM..."
+  mkdir -p "$(dirname "$tpm_dir")"
+  git clone --depth=1 https://github.com/tmux-plugins/tpm "$tpm_dir"
+  green "  ✓ TPM установлен"
 }
 
 # --- Установка шрифтов ---
@@ -185,6 +241,8 @@ main() {
   install_packages
   echo ""
   link_configs
+  echo ""
+  install_tpm
   echo ""
   install_fonts
   echo ""

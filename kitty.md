@@ -1,6 +1,8 @@
 # Kitty Configuration
 
-Конфиг: `~/.config/kitty/kitty.conf` | Тема: `~/.config/kitty/themes/kanagawa.conf`
+Конфиг: `~/.config/kitty/kitty.conf` | Тема: Catppuccin Mocha (`current-theme.conf`)
+
+Kitty используется как быстрый терминал, а окна/сессии управляются через tmux. Большинство `Cmd`-хоткеев отправляют tmux prefix (`Ctrl+B`) и команду.
 
 ## Хоткеи
 
@@ -8,22 +10,25 @@
 
 | Хоткей | Действие |
 |--------|----------|
-| `Cmd+T` | Новый таб (в текущей директории) |
-| `Cmd+W` | Закрыть таб |
-| `Cmd+1-9` | Перейти на таб по номеру |
-| `Cmd+0` | Перейти на таб 10 |
-| `Cmd+Shift+]` | Следующий таб |
-| `Cmd+Shift+[` | Предыдущий таб |
+| `Cmd+T` | Новое окно tmux в текущей директории |
+| `Cmd+W` | Smart close: pane → window → session |
+| `Cmd+N` | Новая tmux-сессия |
+| `Cmd+O` | Выбор tmux/sesh-сессии |
+| `Cmd+K` | Выбор tmux/sesh-сессии |
+| `Cmd+P` | Выбор tmux-окна |
+| `Cmd+1-9` | Перейти на tmux-окно по номеру |
+| `Cmd+0` | Перейти на tmux-окно 10 |
+| `Cmd+]` / `Cmd+[` | Следующее / предыдущее tmux-окно |
+| `Cmd+Shift+]` / `Cmd+Shift+[` | Переместить tmux-окно вправо / влево |
 
 ### Сплиты
 
 | Хоткей | Действие |
 |--------|----------|
-| `Cmd+E` | Горизонтальный сплит (снизу) |
-| `Cmd+Shift+E` | Вертикальный сплит (справа) |
+| `Cmd+E` | Горизонтальный tmux-сплит (снизу) |
+| `Cmd+Shift+E` | Вертикальный tmux-сплит (справа) |
 | `Cmd+H` | Перейти влево |
 | `Cmd+J` | Перейти вниз |
-| `Cmd+K` | Перейти вверх |
 | `Cmd+L` | Перейти вправо |
 
 ### Редактор
@@ -49,7 +54,7 @@
 
 | Параметр | Значение | Зачем |
 |----------|----------|-------|
-| Shell | fish (`/opt/homebrew/bin/fish`) | Запускает fish вместо дефолтного шелла |
+| Shell | `fish` | Запускает fish вместо дефолтного шелла |
 | Шрифт | MesloLGLDZ Nerd Font Mono, 14pt | Nerd Font для иконок в starship/nvim |
 | Курсор | Block | Блочный курсор |
 | Декорации окна | Скрыты | Чистый вид без titlebar |
@@ -58,18 +63,19 @@
 | Scrollback | 10 000 строк | История прокрутки |
 | Звук | Выключен | Без звуковых уведомлений |
 | Remote control | socket-only | Доступ через `kitty @` только по unix-сокету |
+| Clipboard | OSC 52 no-append | Корректная синхронизация буфера из tmux |
 
 ## Табы
 
-Стиль: powerline slanted, сверху. Показывают номер и имя процесса. Появляются когда открыто 2+ табов.
+Нативные kitty-табы скрыты через высокий `tab_bar_min_tabs`: рабочая модель построена вокруг tmux windows/sessions, чтобы не было двух конкурирующих tab bars.
 
 ## Тема
 
-Kanagawa — тёмная тема, вдохновлённая картиной Хокусая. Подключается через `include`, легко заменить — в `themes/` также лежит `gruvbox.conf`.
+Catppuccin Mocha подключается через `current-theme.conf`. Это же семейство используется в tmux, starship и Neovim.
 
 Сменить тему:
 ```
-include ~/.config/kitty/themes/gruvbox.conf
+include current-theme.conf
 ```
 
 ## Remote control

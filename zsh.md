@@ -7,18 +7,18 @@
 ```
 ~/.zprofile          # brew shellenv (загружается при логине)
 ~/.zshrc             # основной конфиг (загружается при каждом терминале)
-~/.config/starship/  # настройки промпта (тема catppuccin_mocha)
+~/.config/starship/  # настройки промпта (тема Catppuccin Mocha)
 ```
 
-## Плагин-менеджер: Zinit
+## Плагины
 
-Устанавливается автоматически при первом запуске. Плагины хранятся в `~/.local/share/zinit/`.
+Zsh-конфиг не использует отдельный plugin manager. Если пакеты установлены через Homebrew или системный пакетный менеджер, `.zshrc` подхватывает их напрямую.
 
 | Плагин | Что делает |
 |--------|-----------|
 | zsh-autosuggestions | Серые подсказки из истории (→ принять, Alt+→ принять слово) |
 | zsh-syntax-highlighting | Подсветка команд: зелёный = валидная, красный = ошибка |
-| zsh-completions | Дополнительные автодополнения для сотен CLI-утилит |
+| carapace | Дополнительные автодополнения, если установлен |
 
 ## Навигация
 
@@ -34,16 +34,14 @@ Zoxide учится на твоих `cd` — чем чаще заходишь в
 | Хоткей | Что делает |
 |--------|-----------|
 | `Ctrl+R` | Поиск по истории команд |
-| `Ctrl+T` | Поиск файлов с превью через bat |
-| `Alt+C` | cd в поддиректорию через fuzzy search |
-| `**<Tab>` | Fuzzy completion (например `vim **<Tab>`) |
+| `fzf` | Доступен как CLI, если установлен |
 
 ## Сессии: Sesh + Tmux
 
 | Команда | Что делает |
 |---------|-----------|
-| `Ctrl+S` | Fuzzy-выбор tmux-сессии (работает из любого режима) |
 | `t` | `sesh connect` — быстрое подключение к сессии |
+| `Cmd+O` в Kitty | Fuzzy-выбор tmux/sesh-сессии через tmux popup |
 
 ## CLI-утилиты
 
@@ -103,12 +101,13 @@ export API_KEY="dev-key-123"
 1. `~/.opencode/bin`
 2. `~/.bun/bin`
 3. `~/.local/bin` (pipx, пользовательские скрипты)
-4. `/opt/homebrew/bin` (brew)
-5. Системные `/usr/bin`, `/bin`
+4. `/opt/homebrew/bin` или `/usr/local/bin` через `brew shellenv`, если Homebrew установлен
+5. `/usr/local/go/bin`, `~/go/bin`
+6. Системные `/usr/bin`, `/bin`
 
 ## Промпт: Starship
 
-Конфиг: `~/.config/starship/starship.toml`, тема `kanagawa`.
+Конфиг: `~/.config/starship/starship.toml`, тема `Catppuccin Mocha`.
 
 Показывает:
 - Текущую директорию
@@ -122,8 +121,8 @@ export API_KEY="dev-key-123"
 ## Обслуживание
 
 ```bash
-# Обновить плагины zinit
-zinit update --all
+# Обновить dotfiles-плагины и Go tools
+dotup
 
 # Пересобрать кэш автодополнений (если что-то не дополняется)
 rm -f ~/.zcompdump && compinit

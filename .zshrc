@@ -18,37 +18,64 @@ setopt HIST_FIND_NO_DUPS
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
 
-# ========== PATH ==========
-export PATH="$HOME/.local/bin:$PATH"
+# ========== DOTFILES ==========
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+  export DOTFILES_DIR="${${(%):-%N}:A:h}"
+fi
 
-# Go
-export PATH="$PATH:/usr/local/go/bin"
+# ========== HOMEBREW ==========
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# ========== PATH ==========
 export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
+typeset -U path PATH
+path=(
+  "$HOME/.opencode/bin"
+  "$HOME/.bun/bin"
+  "$HOME/.local/bin"
+  "/usr/local/go/bin"
+  "$GOPATH/bin"
+  $path
+)
+export PATH
 
 # ========== ALIAS ==========
 alias nv='nvim'
 alias lg='lazygit'
 alias t='sesh connect'
+alias dotup="$DOTFILES_DIR/update.sh"
+alias dotclean="$DOTFILES_DIR/cleanup.sh"
 
 if [[ -n "$IS_MAC" ]]; then
-  alias lc='colorls -lA --sd'
+  if (( $+commands[eza] )); then
+    alias lc='eza --icons -la --group-directories-first'
+  elif (( $+commands[colorls] )); then
+    alias lc='colorls -lA --sd'
+  fi
 elif [[ -n "$IS_LINUX" ]]; then
-  alias pbcopy='xclip -selection clipboard'
-  alias pbpaste='xclip -selection clipboard -o'
+  if ! (( $+commands[pbcopy] )) && (( $+commands[xclip] )); then
+    alias pbcopy='xclip -selection clipboard'
+    alias pbpaste='xclip -selection clipboard -o'
+  fi
 fi
 
 # ========== FZF ==========
-function fzf-history-search() {
-  selected_command=$(fc -l 1 | awk '{$1=""; print substr($0,2)}' | awk '!seen[$0]++' | fzf --height 40% --reverse --prompt="History: ")
-  if [[ -n "$selected_command" ]]; then
-    LBUFFER="$selected_command"
-    zle end-of-line
-  fi
-  zle reset-prompt
-}
-zle -N fzf-history-search
-bindkey '^R' fzf-history-search
+if (( $+commands[fzf] )); then
+  function fzf-history-search() {
+    selected_command=$(fc -l 1 | awk '{$1=""; print substr($0,2)}' | awk '!seen[$0]++' | fzf --height 40% --reverse --prompt="History: ")
+    if [[ -n "$selected_command" ]]; then
+      LBUFFER="$selected_command"
+      zle end-of-line
+    fi
+    zle reset-prompt
+  }
+  zle -N fzf-history-search
+  bindkey '^R' fzf-history-search
+fi
 
 # ========== ЛЕНИВАЯ ЗАГРУЗКА ==========
 
@@ -66,6 +93,7 @@ if (( $+commands[pass] )); then
 fi
 
 # Carapace
+autoload -U compinit; compinit
 if command -v carapace >/dev/null 2>&1; then
   export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
   zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
@@ -90,12 +118,11 @@ for f in \
   [[ -f "$f" ]] && source "$f" && break
 done
 
-# ========== COMPLETIONS ==========
-autoload -U compinit; compinit
-
 # ========== ЛОКАЛЬНЫЕ НАСТРОЙКИ ==========
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # ========== STARSHIP ==========
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
-eval "$(starship init zsh)"
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi

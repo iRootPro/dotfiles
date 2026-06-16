@@ -1,12 +1,12 @@
 # Neovim Configuration
 
-Конфиг: `~/.config/nvim/init.lua` | Тема: kanagawa | Менеджер плагинов: vim.pack | Neovim 0.12+
+Конфиг: `~/.config/nvim/init.lua` | Тема: Catppuccin Mocha | Менеджер плагинов: vim.pack | Neovim 0.12+
 
 ## Плагины
 
 | Плагин | Назначение |
 |--------|-----------|
-| kanagawa.nvim | Цветовая схема |
+| catppuccin/nvim | Цветовая схема |
 | nvim-treesitter | Установка и управление парсерами |
 | snacks.nvim | Picker (файлы, grep, буферы), Explorer (дерево файлов) |
 | blink.cmp | Автодополнение (Enter для выбора) |
@@ -196,7 +196,7 @@
 Кастомный (без lualine), глобальный (`laststatus = 3`):
 
 ```
-[OS] MODE | filename [+] [git branch] [ERR N] [WARN N]          ICON FILETYPE
+[OS] MODE | repo/path/file [+] [git branch] [ERR N] [WARN N]          ICON FILETYPE
 ```
 
-Git-ветка через `vim.b.gitsigns_head` (без subprocess).
+Путь показывается относительно git root, если файл внутри репозитория. Git-ветка через `vim.b.gitsigns_head`.

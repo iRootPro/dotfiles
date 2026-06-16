@@ -1,4 +1,13 @@
 # --- Environment ---
+if not set -q DOTFILES_DIR
+    set -l fish_config_dir (dirname (status --current-filename))
+    if command -q realpath
+        set -gx DOTFILES_DIR (realpath "$fish_config_dir/../..")
+    else
+        set -gx DOTFILES_DIR "$HOME/dotfiles"
+    end
+end
+
 set -gx STARSHIP_CONFIG "$HOME/.config/starship/starship.toml"
 set -gx BAT_CONFIG_PATH "$HOME/.config/bat/config"
 set -gx BUN_INSTALL "$HOME/.bun"
@@ -14,20 +23,41 @@ fish_add_path "$BUN_INSTALL/bin"
 fish_add_path "$HOME/.local/bin"
 
 # --- Homebrew ---
-eval (/opt/homebrew/bin/brew shellenv)
+if test -x /opt/homebrew/bin/brew
+    eval (/opt/homebrew/bin/brew shellenv)
+else if test -x /usr/local/bin/brew
+    eval (/usr/local/bin/brew shellenv)
+end
 
 # --- Shell Integrations ---
-starship init fish | source
-zoxide init fish | source
-direnv hook fish | source
-fzf --fish | source
+if command -q starship
+    starship init fish | source
+end
+
+if command -q zoxide
+    zoxide init fish | source
+end
+
+if command -q direnv
+    direnv hook fish | source
+end
+
+if command -q fzf
+    fzf --fish | source
+end
 
 # --- Aliases ---
 alias nv="nvim"
 alias t="sesh connect"
-alias dotup="$HOME/Downloads/dotfiles/update.sh"
-alias dotclean="$HOME/Downloads/dotfiles/cleanup.sh"
-alias cat="bat"
-alias ls="eza --icons"
-alias ll="eza --icons -la"
-alias lt="eza --icons --tree --level=2"
+alias dotup="$DOTFILES_DIR/update.sh"
+alias dotclean="$DOTFILES_DIR/cleanup.sh"
+
+if command -q bat
+    alias cat="bat"
+end
+
+if command -q eza
+    alias ls="eza --icons"
+    alias ll="eza --icons -la"
+    alias lt="eza --icons --tree --level=2"
+end

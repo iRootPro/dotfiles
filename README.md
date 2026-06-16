@@ -1,16 +1,16 @@
 # Dotfiles
 
-Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Fish.
+Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Fish. Основная тема: Catppuccin Mocha.
 
 ## Что включено
 
 | Инструмент | Конфиг | Описание |
 |------------|--------|----------|
-| **Neovim** | `.config/nvim/` | Конфиг на Lua, vim.pack, встроенный LSP, DAP, Treesitter, fzf-lua |
+| **Neovim** | `.config/nvim/` | Конфиг на Lua, vim.pack, встроенный LSP, DAP, Treesitter, snacks.nvim |
 | **Tmux** | `.config/tmux/tmux.conf` | Сессии, сплиты, TPM-плагины |
-| **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, тема Kanagawa |
+| **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, Cmd-клавиши управляют tmux |
 | **Alacritty** | `.config/alacritty/` | Альтернативный терминал, модульные конфиги |
-| **Starship** | `.config/starship/` | Кросс-платформенный промпт, тема Kanagawa |
+| **Starship** | `.config/starship/` | Кросс-платформенный промпт, тема Catppuccin Mocha |
 | **Fish** | `.config/fish/` | Основной шелл, starship, zoxide, fzf, direnv |
 | **Zsh** | `.zshrc` | Альтернативный шелл, zsh-syntax-highlighting |
 | **Git** | `.gitconfig.template`, `.config/git/` | Delta (side-by-side diff), глобальный gitignore |
@@ -37,11 +37,11 @@ cd ~/dotfiles
 ```
 
 Скрипт автоматически:
-1. Установит все пакеты (neovim, tmux, starship, fzf, bat, eza, ripgrep, delta и др.)
-2. Создаст симлинки (`~/.config` -> dotfiles/.config, `~/.zshrc` и т.д.)
+1. Установит основные пакеты (neovim, tmux, fish, kitty, starship, fzf, bat, eza, ripgrep, delta, sesh и др.)
+2. Создаст per-app симлинки в `~/.config` (`kitty`, `tmux`, `fish`, `nvim` и т.д.), не заменяя весь `~/.config`
 3. Скопирует `.gitconfig.template` в `~/.gitconfig` (заполни имя и email)
 4. Установит шрифт MesloLGLDZ Nerd Font
-5. Установит Go-утилиты (gopls, delve)
+5. Установит TPM для tmux и Go-утилиты (gopls, delve)
 
 ## Структура
 
@@ -72,8 +72,11 @@ cd ~/dotfiles
 ## Обслуживание
 
 ```bash
-# Обновить пакеты, плагины Neovim, Tmux, Zinit
+# Обновить плагины Neovim/Tmux и Go dev tools
 ./update.sh
+
+# Обновить системные пакеты отдельно, с подтверждением
+./update.sh packages
 
 # Проверить что можно почистить (кэши, логи, Docker, Pi sessions)
 ./cleanup.sh
