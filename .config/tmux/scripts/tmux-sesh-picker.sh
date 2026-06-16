@@ -54,20 +54,21 @@ require_cmd tmux
 require_cmd sesh
 require_cmd fzf-tmux
 
-selected="$($list_all | fzf-tmux -p 60%,42% \
+selected="$($list_all | fzf-tmux -p 72%,56% \
   --ansi \
   --no-sort \
   --border \
   --border-label=' sesh · all ' \
-  --prompt='session › ' \
-  --header='enter switch · c-t tmux · c-c config · c-d kill' \
+  --prompt='sessions › ' \
+  --header='enter switch · c-a all · c-t tmux · c-c config · c-z zoxide · c-d kill' \
   --info=inline-right \
-  --pointer='▶' \
+  --highlight-line \
+  --pointer='▌' \
   --marker='✓' \
   --preview='$HOME/.config/tmux/scripts/tmux-sesh-preview.sh {}' \
-  --preview-window='right:38%,border-left,wrap' \
+  --preview-window='right:44%,border-left,wrap' \
   --color="$fzf_colors" \
-  --bind="ctrl-a:change-border-label( sesh · all )+change-prompt(session › )+reload($list_all)" \
+  --bind="ctrl-a:change-border-label( sesh · all )+change-prompt(sessions › )+reload($list_all)" \
   --bind="ctrl-t:change-border-label( sesh · tmux )+change-prompt(tmux › )+reload($list_tmux)" \
   --bind="ctrl-c:change-border-label( sesh · config )+change-prompt(config › )+reload($list_config)" \
   --bind="ctrl-z:change-border-label( sesh · zoxide )+change-prompt(zoxide › )+reload($list_zoxide)" \
