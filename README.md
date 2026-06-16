@@ -7,7 +7,7 @@
 | Инструмент | Конфиг | Описание |
 |------------|--------|----------|
 | **Neovim** | `.config/nvim/` | Конфиг на Lua, vim.pack, встроенный LSP, DAP, Treesitter, fzf-lua |
-| **Tmux** | `.config/tmux/`, `.tmux.conf` | Сессии, сплиты, TPM-плагины |
+| **Tmux** | `.config/tmux/tmux.conf` | Сессии, сплиты, TPM-плагины |
 | **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, тема Kanagawa |
 | **Alacritty** | `.config/alacritty/` | Альтернативный терминал, модульные конфиги |
 | **Starship** | `.config/starship/` | Кросс-платформенный промпт, тема Kanagawa |
@@ -59,7 +59,7 @@ cd ~/dotfiles
 │   └── tmux/            # конфиг Tmux + плагины
 ├── scripts/             # вспомогательные скрипты
 ├── .zshrc               # конфиг Zsh
-├── .tmux.conf           # точка входа Tmux
+├── .tmux.conf           # совместимость; основной конфиг в .config/tmux/tmux.conf
 ├── .skhdrc              # хоткеи Skhd (macOS)
 ├── .yabairc             # конфиг Yabai (macOS)
 ├── .gitconfig.template  # шаблон git-конфига

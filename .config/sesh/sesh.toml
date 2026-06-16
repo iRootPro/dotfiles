@@ -1,0 +1,34 @@
+#:schema https://github.com/joshmedeski/sesh/raw/main/sesh.schema.json
+
+[default_session]
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "dotfiles"
+path = "~/Downloads/dotfiles"
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "home-infra"
+path = "~/code/github.com/iRootPro/home-infra"
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "idp-backend"
+path = "~/Code/gitlab.wildberries.ru/idp-backend"
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "nvim"
+path = "~/.config/nvim"
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "rdr"
+path = "~/Code/github.com/iRootPro/rdr"
+preview_command = "eza --all --git --icons --color=always {}"
+
+[[session]]
+name = "lofi-player"
+path = "~/Code/github.com/iRootPro/lofi-player"
+preview_command = "eza --all --git --icons --color=always {}"

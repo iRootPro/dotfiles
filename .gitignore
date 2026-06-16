@@ -8,6 +8,11 @@
 # ОС
 .DS_Store
 
+# Tmux runtime/vendor state
+.config/tmux/plugins/
+tmux-client-*.log
+tmux-server-*.log
+
 # Локальные настройки Claude
 .config/.claude/settings.local.json
 

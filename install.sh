@@ -27,7 +27,7 @@ install_packages() {
   local packages=(
     neovim tmux starship zoxide fzf
     bat eza fd ripgrep git-delta direnv
-    lazygit btop jq
+    lazygit btop jq sesh
   )
 
   if [ "$OS" = "Darwin" ]; then
@@ -84,6 +84,11 @@ install_from_binary() {
   if ! command -v lazygit &>/dev/null; then
     yellow "Установка lazygit..."
     go install github.com/jesseduffield/lazygit@latest 2>/dev/null || yellow "  Пропущено (нужен go)"
+  fi
+  # sesh
+  if ! command -v sesh &>/dev/null; then
+    yellow "Установка sesh..."
+    go install github.com/joshmedeski/sesh/v2@latest 2>/dev/null || yellow "  Пропущено (нужен go)"
   fi
   # btop
   if ! command -v btop &>/dev/null; then

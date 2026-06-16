@@ -23,6 +23,7 @@ fzf --fish | source
 # --- Aliases ---
 alias nv="nvim"
 alias lv='NVIM_APPNAME=nvim-lazy nvim'
+alias t="sesh connect"
 alias dotup="$HOME/Downloads/dotfiles/update.sh"
 alias dotclean="$HOME/Downloads/dotfiles/cleanup.sh"
 alias cat="bat"

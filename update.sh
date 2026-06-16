@@ -47,7 +47,7 @@ update_zinit() {
 # --- Tmux плагины ---
 update_tmux() {
   step "Tmux плагины"
-  local tpm="$HOME/.tmux/plugins/tpm/bin/update_plugins"
+  local tpm="$HOME/.config/tmux/plugins/tpm/bin/update_plugins"
   if [ -x "$tpm" ]; then
     "$tpm" all && green "  ✓ TPM"
   else
@@ -61,6 +61,9 @@ update_go() {
   if command -v go &>/dev/null; then
     go install golang.org/x/tools/gopls@latest && green "  ✓ gopls"
     go install github.com/go-delve/delve/cmd/dlv@latest && green "  ✓ delve"
+    if [ "$OS" != "Darwin" ]; then
+      go install github.com/joshmedeski/sesh/v2@latest && green "  ✓ sesh"
+    fi
   else
     yellow "  Go не установлен"
   fi

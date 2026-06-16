@@ -26,13 +26,10 @@ export PATH="$PATH:/usr/local/go/bin"
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 
-# Tmux session manager
-export PATH="$HOME/.tmux/plugins/t-smart-tmux-session-manager/bin:$PATH"
-export PATH="$HOME/.config/tmux/plugins/t-smart-tmux-session-manager/bin:$PATH"
-
 # ========== ALIAS ==========
 alias nv='nvim'
 alias lg='lazygit'
+alias t='sesh connect'
 
 if [[ -n "$IS_MAC" ]]; then
   alias lc='colorls -lA --sd'
