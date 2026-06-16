@@ -9,6 +9,8 @@
 *.log
 *.pid
 *.sock
+__pycache__/
+*.pyc
 
 # ОС
 .DS_Store
