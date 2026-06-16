@@ -4,6 +4,8 @@ set -gx BAT_CONFIG_PATH "$HOME/.config/bat/config"
 set -gx BUN_INSTALL "$HOME/.bun"
 set -gx FZF_DEFAULT_OPTS "--height 40% --reverse --border"
 set -gx FZF_CTRL_T_OPTS "--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
+set -gx TALOSCONFIG "$HOME/.config/talos/home-cluster/talosconfig"
+set -gx KUBECONFIG "$HOME/.kube/home-talos.yaml"
 
 # --- PATH ---
 fish_add_path "$HOME/go/bin"
@@ -22,7 +24,6 @@ fzf --fish | source
 
 # --- Aliases ---
 alias nv="nvim"
-alias lv='NVIM_APPNAME=nvim-lazy nvim'
 alias t="sesh connect"
 alias dotup="$HOME/Downloads/dotfiles/update.sh"
 alias dotclean="$HOME/Downloads/dotfiles/cleanup.sh"

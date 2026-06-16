@@ -19,6 +19,7 @@
 | **Sketchybar** | `.config/sketchybar/` | Кастомный статус-бар для macOS |
 | **Skhd** | `.skhdrc` | Хоткеи для macOS |
 | **Yabai** | `.yabairc` | Тайлинговый WM для macOS |
+| **Pi** | `pi/agent/` | Non-secret Pi coding agent skills/extensions/settings template |
 
 ## Требования
 
@@ -74,8 +75,11 @@ cd ~/dotfiles
 # Обновить пакеты, плагины Neovim, Tmux, Zinit
 ./update.sh
 
-# Проверить что можно почистить (кэши, логи, Docker)
+# Проверить что можно почистить (кэши, логи, Docker, Pi sessions)
 ./cleanup.sh
+
+# Посмотреть/восстановить non-secret Pi config
+./scripts/pi-sync.sh status
 ```
 
 ## Документация
@@ -84,3 +88,4 @@ cd ~/dotfiles
 - [Neovim](nvim.md) — плагины, LSP, DAP, хоткеи
 - [Zsh](zsh.md) — промпт, плагины, алиасы, CLI-утилиты
 - [Kitty](kitty.md) — хоткеи, настройки терминала
+- [Pi](pi.md) — Pi coding agent setup, skills/extensions, restore flow

@@ -18,3 +18,9 @@ tmux-server-*.log
 
 # Персональный gitconfig (используй .gitconfig.template)
 .gitconfig
+
+# Pi runtime/secrets (в repo хранится только pi/agent non-secret template/assets)
+pi/agent/auth.json
+pi/agent/sessions/
+pi/agent/run-history.jsonl
+pi/youtube_credentials/

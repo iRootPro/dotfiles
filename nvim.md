@@ -87,32 +87,38 @@
 | `Leader gg` | go generate |
 | `Leader gt` | go test |
 | `Leader gf` | Тест текущей функции |
-| `Leader gi` | Имплементировать интерфейс |
 | `Leader gs` | Заполнить struct |
 
 ### Дебаг (nvim-dap + delve)
 
-Требуется: `go install github.com/go-delve/delve/cmd/dlv@latest`
+Требуется `dlv` в `PATH`: `go install github.com/go-delve/delve/cmd/dlv@latest`.
+Конфиг явно передаёт `dap-go` путь из `vim.fn.exepath("dlv")`.
 
 | Хоткей | Действие |
 |--------|----------|
+| `Leader dc` | Старт/продолжить дебаг (`dap.continue`) |
 | `Leader db` | Поставить/убрать breakpoint |
+| `Leader dB` | Conditional breakpoint |
+| `Leader dL` | Logpoint |
+| `Leader dp` | Панель breakpoints с подсказкой снизу: `o` открыть, `t` enable/disable, `d` удалить выбранный |
+| `Leader da` | Удалить все breakpoints с подтверждением |
 | `Leader dt` | Дебаг ближайшего теста |
 | `Leader dl` | Дебаг последнего теста |
 | `Leader du` | Показать/скрыть DAP UI |
+| `Leader dr` | Показать/скрыть DAP REPL |
 | `Leader dx` | Остановить дебаг |
 
 Во время активной дебаг-сессии включаются однокнопочные кейбинды:
 
 | Клавиша | Действие |
 |---------|----------|
-| `n` | Step over (следующая строка) |
-| `s` | Step into (войти в функцию) |
-| `o` | Step out (выйти из функции) |
-| `c` | Continue (до следующего breakpoint) |
-| `x` | Terminate (завершить сессию) |
+| `F10` | Step over (следующая строка) |
+| `F11` | Step into (войти в функцию) |
+| `F12` | Step out (выйти из функции) |
+| `F5` | Continue (до следующего breakpoint) |
+| `F6` | Terminate (завершить сессию) |
 
-При завершении дебага кейбинды автоматически снимаются.
+При старте дебага `dap-ui` показывает эти клавиши в панели controls над REPL и выводит короткое напоминание. При завершении дебага кейбинды автоматически снимаются.
 
 ### Выделение (встроенные 0.12)
 

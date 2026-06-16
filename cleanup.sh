@@ -235,6 +235,47 @@ check_logs() {
   fi
 }
 
+# ─── Pi coding agent ───
+
+check_pi_agent() {
+  bold "Pi coding agent"
+  echo ""
+
+  local pi_dir="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}"
+  local session_dir="$pi_dir/sessions"
+
+  if [ -d "$session_dir" ]; then
+    local sessions_size
+    sessions_size=$(dir_size "$session_dir")
+    local sessions_count
+    sessions_count=$(find "$session_dir" -type f -name '*.jsonl' 2>/dev/null | wc -l | tr -d ' ')
+
+    if [ "$sessions_size" -gt 0 ]; then
+      dim "  Sessions: $(human_size "$sessions_size") across ${sessions_count:-0} jsonl files"
+      dim "  → Inspect: du -sh ~/.pi/agent/sessions/* | sort -rh | head"
+      dim "  → Export/share consciously; sessions may contain prompts, code, paths, or secrets."
+      echo ""
+    fi
+  else
+    green "  Pi sessions not found"
+    echo ""
+  fi
+
+  local yt_dir="$HOME/.pi/youtube_credentials"
+  if [ -d "$yt_dir" ]; then
+    local loose
+    loose=$(find "$yt_dir" -type f \( -name '*.json' -o -name '*token*' \) -perm /077 2>/dev/null | wc -l | tr -d ' ')
+    if [ "${loose:-0}" -gt 0 ]; then
+      yellow "  $loose YouTube credential files are not chmod 600"
+      yellow "  → chmod 600 ~/.pi/youtube_credentials/*.json"
+      echo ""
+    else
+      green "  YouTube credential permissions look strict"
+      echo ""
+    fi
+  fi
+}
+
 # ─── Старые загрузки ───
 
 check_downloads() {
@@ -276,6 +317,7 @@ main() {
   check_brew_unused
   check_large_dirs
   check_logs
+  check_pi_agent
   check_downloads
 
   echo ""
