@@ -10,6 +10,7 @@ dotfiles open
 dotfiles open fish
 dotfiles open tmux
 dotfiles open apps
+dotfiles open graphify-skill
 dotfiles open brewfile --print
 dotfiles open --json
 dotfiles open --check

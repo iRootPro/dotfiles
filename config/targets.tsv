@@ -13,6 +13,9 @@ install	file	install.sh	Installer and symlink script
 kitty	file	.config/kitty/kitty.conf	Kitty terminal config and keybindings
 nvim	file	.config/nvim/init.lua	Neovim entrypoint
 opencode	file	.config/opencode/opencode.jsonc	Opencode config
+opencode-project	file	.opencode/opencode.json	Project opencode config
+opencode-graphify-plugin	file	.opencode/plugins/graphify.js	Project graphify opencode plugin
+graphify-skill	file	.config/opencode/skills/graphify/SKILL.md	Global graphify skill body
 pi	doc	pi.md	Pi coding agent runbook
 pi-agent	dir	pi/agent	Non-secret Pi agent assets
 readme	doc	README.md	Repository overview

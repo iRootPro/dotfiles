@@ -64,6 +64,26 @@ dot_records() {
       elif .route == "dotfiles doctor" then
         "dot:doctor" + $sep + "dotfiles" + $sep + "doctor" + $sep + .summary,
         "dot:doctor%20--summary" + $sep + "dotfiles" + $sep + "Doctor summary" + $sep + "Show compact health status"
+      elif .route == "dotfiles cleanup" then
+        "dot:cleanup" + $sep + "dotfiles" + $sep + "Cleanup audit" + $sep + "Show audit-only cleanup suggestions"
+      elif .route == "dotfiles pi status" then
+        "dot:pi%20status" + $sep + "dotfiles" + $sep + "Pi status" + $sep + "Show non-secret Pi config status"
+      elif .route == "dotfiles status" then
+        "dot:status" + $sep + "dotfiles" + $sep + "Repo status" + $sep + "Show repo status and recent commits"
+      elif .route == "dotfiles debug" then
+        "dot:debug" + $sep + "dotfiles" + $sep + "Debug snapshot" + $sep + "Print safe diagnostic snapshot"
+      elif .route == "dotfiles reload" then
+        "dot:reload" + $sep + "dotfiles" + $sep + "Reload config" + $sep + "Reload shell/tmux config"
+      elif .route == "dotfiles open" then
+        "dot:open" + $sep + "dotfiles" + $sep + "Open targets" + $sep + "List curated dotfiles files and docs"
+      elif .route == "dotfiles update" then
+        "dot:update" + $sep + "dotfiles" + $sep + "Update" + $sep + "Update plugins/tools with the default mode",
+        "dot:update%20packages" + $sep + "dotfiles" + $sep + "Update packages" + $sep + "Run Homebrew package updates",
+        "dot:update%20plugins" + $sep + "dotfiles" + $sep + "Update plugins" + $sep + "Update shell/editor/tmux plugins",
+        "dot:update%20nvim" + $sep + "dotfiles" + $sep + "Update Neovim" + $sep + "Update Neovim plugins",
+        "dot:update%20tmux" + $sep + "dotfiles" + $sep + "Update tmux" + $sep + "Update tmux plugins",
+        "dot:update%20go" + $sep + "dotfiles" + $sep + "Update Go tools" + $sep + "Update Go-based tools",
+        "dot:update%20all" + $sep + "dotfiles" + $sep + "Update all" + $sep + "Run all update modes"
       else
         (.route | sub("^dotfiles "; "")) as $short
         | "dot:" + ($short | gsub(" "; "%20")) + $sep + "dotfiles" + $sep + $short + $sep + (if .route == "dotfiles reload" then "Reload shell/tmux config" else .summary end)
