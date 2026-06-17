@@ -38,9 +38,11 @@ tmux-server-*.log
 .config/band-tui/
 .config/mmux/
 .config/rdr/
+.config/sshm/config.json
 .config/sshm/*history*
 .config/sshm/backups/
 .config/sshm/*.backup
+.config/talos/
 
 # Generated/local dependency state
 .config/opencode/node_modules/
