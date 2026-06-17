@@ -61,6 +61,9 @@ dot_records() {
         "dot:apps" + $sep + "dotfiles" + $sep + "Apps" + $sep + "Show curated app and CLI catalog",
         "dot:apps%20--missing" + $sep + "dotfiles" + $sep + "Missing apps" + $sep + "Show missing apps/tools",
         "dot:apps%20--check" + $sep + "dotfiles" + $sep + "Apps check" + $sep + "Validate app catalog"
+      elif .route == "dotfiles doctor" then
+        "dot:doctor" + $sep + "dotfiles" + $sep + "doctor" + $sep + .summary,
+        "dot:doctor%20--summary" + $sep + "dotfiles" + $sep + "Doctor summary" + $sep + "Show compact health status"
       else
         (.route | sub("^dotfiles "; "")) as $short
         | "dot:" + ($short | gsub(" "; "%20")) + $sep + "dotfiles" + $sep + $short + $sep + (if .route == "dotfiles reload" then "Reload shell/tmux config" else .summary end)
