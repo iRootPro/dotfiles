@@ -135,6 +135,7 @@ git diff --cached --check
 
 Подробные описания конфигов и хоткеев:
 - [Neovim](nvim.md) — плагины, LSP, DAP, хоткеи
+- [Fish](fish.md) — основной shell, aliases/functions, daily commands
 - [Zsh](zsh.md) — промпт, плагины, алиасы, CLI-утилиты
 - [Kitty](kitty.md) — хоткеи, настройки терминала
 - [Pi](pi.md) — Pi coding agent setup, skills/extensions, restore flow

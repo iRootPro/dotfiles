@@ -212,6 +212,26 @@ check_shell_scripts() {
   done < <(find "$ROOT" -type f -name '*.sh' -not -path '*/.git/*' -not -path '*/plugins/*' 2>/dev/null)
 }
 
+check_fish_config() {
+  section "Fish Config"
+  if ! command -v fish >/dev/null 2>&1; then
+    fail "fish not found"
+    return 0
+  fi
+
+  local files=("$ROOT/.config/fish/config.fish")
+  local fn
+  while IFS= read -r fn; do
+    files+=("$fn")
+  done < <(find "$ROOT/.config/fish/functions" -type f -name '*.fish' 2>/dev/null)
+
+  if fish -n "${files[@]}" 2>/dev/null; then
+    pass "fish syntax"
+  else
+    fail "fish syntax"
+  fi
+}
+
 check_brewfile() {
   [ "$OS" = "Darwin" ] || return 0
   [ -f "$ROOT/Brewfile" ] || return 0
@@ -308,6 +328,7 @@ main() {
   check_config_drift
   check_symlinks
   check_shell_scripts
+  check_fish_config
   check_brewfile
   check_git_safety
   check_tmux_live
