@@ -1,5 +1,6 @@
 # Lock-файлы
 .config/nvim/nvim-pack-lock.json
+Brewfile.lock.json
 
 # Бэкапы
 *.bak

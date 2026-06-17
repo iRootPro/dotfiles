@@ -37,11 +37,17 @@ cd ~/dotfiles
 ```
 
 Скрипт автоматически:
-1. Установит основные пакеты (neovim, tmux, fish, kitty, starship, fzf, bat, eza, ripgrep, delta, sesh и др.)
+1. Установит основные пакеты (на macOS через `Brewfile`/`brew bundle`; на Linux через системный пакетный менеджер и fallback-установщики)
 2. Создаст per-app симлинки в `~/.config` (`kitty`, `tmux`, `fish`, `nvim` и т.д.), не заменяя весь `~/.config`
 3. Скопирует `.gitconfig.template` в `~/.gitconfig` (заполни имя и email)
 4. Установит шрифт MesloLGLDZ Nerd Font
 5. Установит TPM для tmux и Go-утилиты (gopls, delve)
+
+После установки проверь окружение:
+
+```bash
+./doctor.sh
+```
 
 ## Структура
 
@@ -58,12 +64,15 @@ cd ~/dotfiles
 │   ├── sketchybar/      # конфиг Sketchybar (macOS)
 │   ├── starship/        # конфиг Starship prompt
 │   └── tmux/            # конфиг Tmux + плагины
+├── docs/                # bootstrap, commit policy, стратегия dotfiles
 ├── scripts/             # вспомогательные скрипты
 ├── .zshrc               # конфиг Zsh
 ├── .tmux.conf           # совместимость; основной конфиг в .config/tmux/tmux.conf
 ├── .skhdrc              # хоткеи Skhd (macOS)
 ├── .yabairc             # конфиг Yabai (macOS)
 ├── .gitconfig.template  # шаблон git-конфига
+├── Brewfile             # curated macOS packages/casks/fonts
+├── doctor.sh            # проверка установки и безопасности dotfiles
 ├── install.sh           # установка всего
 ├── update.sh            # обновление пакетов и плагинов
 └── cleanup.sh           # аудит кэшей и мусора
@@ -81,9 +90,43 @@ cd ~/dotfiles
 # Проверить что можно почистить (кэши, логи, Docker, Pi sessions)
 ./cleanup.sh
 
+# Проверить symlinks, команды, shell scripts и secret-like tracked paths
+./doctor.sh
+
 # Посмотреть/восстановить non-secret Pi config
 ./scripts/pi-sync.sh status
 ```
+
+## Перенос на новую машину
+
+Базовый flow:
+
+```bash
+git clone git@github.com:iRootPro/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install.sh
+./doctor.sh
+```
+
+После этого вручную восстанови machine-local state: `~/.gitconfig`, GitHub auth,
+SSH keys и секреты из password manager. Подробно: [bootstrap.md](docs/bootstrap.md).
+
+## Правила коммитов
+
+В git попадают только portable, non-secret настройки. Runtime state, tokens,
+auth-файлы, logs, caches и machine-local credentials не коммитятся.
+
+Перед коммитом:
+
+```bash
+git status --short
+git diff
+git add <related files only>
+git diff --cached
+git diff --cached --check
+```
+
+Подробно: [commit-policy.md](docs/commit-policy.md), [current-audit.md](docs/current-audit.md) и [dotfiles-strategy.md](docs/dotfiles-strategy.md).
 
 ## Документация
 
@@ -92,3 +135,7 @@ cd ~/dotfiles
 - [Zsh](zsh.md) — промпт, плагины, алиасы, CLI-утилиты
 - [Kitty](kitty.md) — хоткеи, настройки терминала
 - [Pi](pi.md) — Pi coding agent setup, skills/extensions, restore flow
+- [New machine bootstrap](docs/bootstrap.md)
+- [Commit policy](docs/commit-policy.md)
+- [Current worktree audit](docs/current-audit.md)
+- [Dotfiles strategy](docs/dotfiles-strategy.md)

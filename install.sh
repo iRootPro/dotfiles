@@ -45,8 +45,13 @@ install_packages() {
       yellow "Установка Homebrew..."
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
-    green "Установка пакетов через brew..."
-    brew install "${packages[@]}" zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+    if [ -f "$DOTFILES/Brewfile" ]; then
+      green "Установка пакетов через brew bundle..."
+      brew bundle --file="$DOTFILES/Brewfile"
+    else
+      green "Установка пакетов через brew..."
+      brew install "${packages[@]}" zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+    fi
 
   elif [ "$OS" = "Linux" ]; then
     if command -v apt &>/dev/null; then
