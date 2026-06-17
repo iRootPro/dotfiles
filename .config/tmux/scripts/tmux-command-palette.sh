@@ -40,6 +40,34 @@ safe_window_name() {
   printf 'dot:%.24s\n' "$name"
 }
 
+action_metadata() {
+  local action="$1" dotfiles
+  dotfiles="$(dotfiles_bin)"
+  [ -n "$dotfiles" ] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+
+  "$dotfiles" actions --json 2>/dev/null | jq -r --arg id "$action" '
+    .actions[]
+    | select(.id == $id)
+    | [.label, .summary]
+    | @tsv
+  ' 2>/dev/null || true
+}
+
+target_metadata() {
+  local target="$1" dotfiles
+  dotfiles="$(dotfiles_bin)"
+  [ -n "$dotfiles" ] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+
+  "$dotfiles" open --json 2>/dev/null | jq -r --arg id "$target" '
+    .targets[]
+    | select(.id == $id)
+    | [.type, .path, .summary, .absolute_path]
+    | @tsv
+  ' 2>/dev/null || true
+}
+
 popup_command() {
   local command="${1:-}" status log_dir log
   [ -n "$command" ] || exit 0
@@ -73,7 +101,7 @@ popup_command() {
 }
 
 preview_action() {
-  local action="${1:-}" dotfiles route target root path window_name
+  local action="${1:-}" dotfiles route target root path window_name label summary target_type relpath target_summary abs_path
   [ -n "$action" ] || exit 0
 
   printf '\033[1;34m%s\033[0m\n\n' "$action"
@@ -125,7 +153,19 @@ preview_action() {
       dotfiles="$(dotfiles_bin)"
       route="${action#dot:}"
       route="${route//%20/ }"
-      printf 'Run dotfiles command in a popup with log capture.\n\n'
+      IFS=$'\t' read -r label summary < <(action_metadata "$action")
+      [ -n "${label:-}" ] && printf '%s\n' "$label"
+      [ -n "${summary:-}" ] && printf '%s\n' "$summary"
+      printf '\nRun dotfiles command in a popup with log capture.\n'
+      case "$route" in
+        update|update\ *)
+          printf 'Warning: update actions can take a while and may use the network.\n'
+          ;;
+        cleanup)
+          printf 'Safety: cleanup is audit-only and does not delete files.\n'
+          ;;
+      esac
+      printf '\n'
       printf 'Command:\n  %s %s\n' "${dotfiles:-dotfiles}" "$route"
       [ "$route" = "debug" ] && printf '  --print\n'
       ;;
@@ -136,14 +176,24 @@ preview_action() {
       if [ -n "$dotfiles" ]; then
         root="$(cd "$(dirname "$(realpath "$dotfiles")")/.." && pwd)"
         path="$($dotfiles open "$target" --print 2>/dev/null || true)"
+        IFS=$'\t' read -r target_type relpath target_summary abs_path < <(target_metadata "$target")
+        [ -n "${abs_path:-}" ] && path="$abs_path"
       else
         root="$HOME/dotfiles"
         path=""
       fi
       printf 'Open target in a new tmux window.\n\n'
+      [ -n "${target_type:-}" ] && printf 'Type:   %s\n' "$target_type"
+      [ -n "${target_summary:-}" ] && printf 'About:  %s\n' "$target_summary"
       printf 'Window: %s\n' "$window_name"
       printf 'Root:   %s\n' "$root"
+      [ -n "${relpath:-}" ] && printf 'Target: %s\n' "$relpath"
       [ -n "$path" ] && printf 'Path:   %s\n' "$path"
+      case "$target" in
+        opencode*|graphify-skill)
+          printf '\nNote: restart opencode after editing config, skills, or plugins.\n'
+          ;;
+      esac
       printf '\nCommand:\n  %s open %s\n' "${dotfiles:-dotfiles}" "$target"
       ;;
     *)
