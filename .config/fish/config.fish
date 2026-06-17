@@ -15,6 +15,7 @@ set -gx FZF_DEFAULT_OPTS "--height 40% --reverse --border"
 set -gx FZF_CTRL_T_OPTS "--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
 set -gx TALOSCONFIG "$HOME/.config/talos/home-cluster/talosconfig"
 set -gx KUBECONFIG "$HOME/.kube/home-talos.yaml"
+set -g fish_greeting ""
 
 # --- PATH ---
 fish_add_path "$HOME/go/bin"
