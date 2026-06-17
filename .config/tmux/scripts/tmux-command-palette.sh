@@ -72,6 +72,86 @@ popup_command() {
   exit 0
 }
 
+preview_action() {
+  local action="${1:-}" dotfiles route target root path window_name
+  [ -n "$action" ] || exit 0
+
+  printf '\033[1;34m%s\033[0m\n\n' "$action"
+
+  case "$action" in
+    close)
+      printf 'Close the command palette without running anything.\n'
+      ;;
+    sessions)
+      printf 'Open sesh/tmux session picker.\n'
+      printf 'Script: ~/.config/tmux/scripts/tmux-sesh-picker.sh\n'
+      ;;
+    windows)
+      printf 'Open tmux window picker.\n'
+      printf 'Script: ~/.config/tmux/scripts/tmux-window-picker.sh\n'
+      ;;
+    new-session)
+      printf 'Prompt for a new tmux session name in the current pane directory.\n'
+      ;;
+    new-window)
+      printf 'Create a new tmux window in the current pane directory.\n'
+      ;;
+    smart-close)
+      printf 'Close pane, window, or session safely.\n'
+      printf 'Script: ~/.config/tmux/scripts/tmux-smart-close.sh\n'
+      ;;
+    split-down)
+      printf 'Create a horizontal split below in the current pane directory.\n'
+      ;;
+    split-right)
+      printf 'Create a vertical split on the right in the current pane directory.\n'
+      ;;
+    opencode-launch)
+      printf 'Start an opencode session for the current pane directory.\n'
+      ;;
+    opencode-list)
+      printf 'Show existing opencode sessions.\n'
+      ;;
+    lazygit)
+      printf 'Open lazygit in a new tmux window named git.\n'
+      ;;
+    rename-window)
+      printf 'Prompt for the current tmux window name.\n'
+      ;;
+    rename-session)
+      printf 'Prompt for the current tmux session name.\n'
+      ;;
+    dot:*)
+      dotfiles="$(dotfiles_bin)"
+      route="${action#dot:}"
+      route="${route//%20/ }"
+      printf 'Run dotfiles command in a popup with log capture.\n\n'
+      printf 'Command:\n  %s %s\n' "${dotfiles:-dotfiles}" "$route"
+      [ "$route" = "debug" ] && printf '  --print\n'
+      ;;
+    open:*)
+      dotfiles="$(dotfiles_bin)"
+      target="${action#open:}"
+      window_name="$(safe_window_name "$target")"
+      if [ -n "$dotfiles" ]; then
+        root="$(cd "$(dirname "$(realpath "$dotfiles")")/.." && pwd)"
+        path="$($dotfiles open "$target" --print 2>/dev/null || true)"
+      else
+        root="$HOME/dotfiles"
+        path=""
+      fi
+      printf 'Open target in a new tmux window.\n\n'
+      printf 'Window: %s\n' "$window_name"
+      printf 'Root:   %s\n' "$root"
+      [ -n "$path" ] && printf 'Path:   %s\n' "$path"
+      printf '\nCommand:\n  %s open %s\n' "${dotfiles:-dotfiles}" "$target"
+      ;;
+    *)
+      printf 'No preview available for this action.\n'
+      ;;
+  esac
+}
+
 run_action() {
   local action="$1"
   local path window_id
@@ -131,6 +211,8 @@ pick_command() {
     --layout=reverse \
     --header='enter run | esc/q/c-c close | c-r reload' \
     --bind="esc:abort,q:abort,ctrl-c:abort,ctrl-r:reload($self list)" \
+    --preview="$self preview {1}" \
+    --preview-window='right:45%:wrap' \
     --color="$fzf_colors")" || exit 0
 
   [ -n "$selected" ] || exit 0
@@ -141,6 +223,7 @@ pick_command() {
 case "$mode" in
   list) list_commands ;;
   popup) popup_command "${2:-}" ;;
+  preview) preview_action "${2:-}" ;;
   run) run_action "${2:-}" || exit 0 ;;
   pick|*) pick_command ;;
 esac
