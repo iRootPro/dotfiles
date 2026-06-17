@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Show curated app and CLI catalog
+# dotfiles:args=[--tier TIER] [--category CATEGORY] [--kind KIND] [--status STATUS] [--missing] [--json|--markdown|--check]
+# dotfiles:examples=dotfiles apps | dotfiles apps --missing | dotfiles apps --tier core
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CATALOG="$ROOT/config/apps.tsv"
+BREWFILE="$ROOT/Brewfile"
+SEP=$'\034'
+
+usage() {
+  cat <<'EOF'
+Usage: dotfiles apps [--tier TIER] [--category CATEGORY] [--kind KIND] [--status STATUS] [--missing] [--json|--markdown|--check]
+
+Show the curated app and CLI catalog used by these dotfiles.
+
+Options:
+  --tier TIER          Filter by tier: core, dev, optional
+  --category CATEGORY  Filter by category: terminal, shell, git, editor, data, lang, tmux, font
+  --kind KIND          Filter by install kind: brew, cask
+  --status STATUS      Filter by status: installed, missing, unknown
+  --missing           Show only missing apps/tools
+  --json              Emit machine-readable JSON (requires jq)
+  --markdown          Emit a Markdown table
+  --check             Validate catalog metadata and Brewfile coverage
+EOF
+}
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+app_status() {
+  local kind="$1" package="$2" command_name="$3"
+
+  if [ -n "$command_name" ] && [ "$command_name" != "-" ]; then
+    if command -v "$command_name" >/dev/null 2>&1; then
+      printf 'installed'
+    else
+      printf 'missing'
+    fi
+    return 0
+  fi
+
+  if ! command -v brew >/dev/null 2>&1; then
+    printf 'unknown'
+    return 0
+  fi
+
+  case "$kind" in
+    brew)
+      if brew list --formula "$package" >/dev/null 2>&1; then
+        printf 'installed'
+      else
+        printf 'missing'
+      fi
+      ;;
+    cask)
+      if brew list --cask "$package" >/dev/null 2>&1; then
+        printf 'installed'
+      else
+        printf 'missing'
+      fi
+      ;;
+    *) printf 'unknown' ;;
+  esac
+}
+
+status_marker() {
+  case "$1" in
+    installed) printf 'OK' ;;
+    missing) printf 'MISS' ;;
+    *) printf 'UNK' ;;
+  esac
+}
+
+emit_records() {
+  local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
+  local id category tier kind package command_name summary status
+
+  while IFS=$'\t' read -r id category tier kind package command_name summary; do
+    id="$(trim "${id:-}")"
+    [ -z "$id" ] && continue
+    [[ "$id" == '#'* ]] && continue
+    [ -z "$tier_filter" ] || [ "$tier" = "$tier_filter" ] || continue
+    [ -z "$category_filter" ] || [ "$category" = "$category_filter" ] || continue
+    [ -z "$kind_filter" ] || [ "$kind" = "$kind_filter" ] || continue
+
+    status="$(app_status "$kind" "$package" "$command_name")"
+    [ -z "$status_filter" ] || [ "$status" = "$status_filter" ] || continue
+
+    printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' \
+      "$id" "$SEP" "$category" "$SEP" "$tier" "$SEP" "$kind" "$SEP" "$package" "$SEP" "$command_name" "$SEP" "$summary" "$SEP" "$status"
+  done <"$CATALOG"
+}
+
+show_table() {
+  local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
+  local id category tier kind package command_name summary status installed=0 missing=0 unknown=0 total=0
+
+  printf '%-5s  %-24s  %-9s  %-8s  %-8s  %s\n' 'State' 'App' 'Category' 'Tier' 'Kind' 'Summary'
+  printf '%-5s  %-24s  %-9s  %-8s  %-8s  %s\n' '-----' '---' '--------' '----' '----' '-------'
+  while IFS="$SEP" read -r id category tier kind package command_name summary status; do
+    [ -n "$id" ] || continue
+    total=$((total + 1))
+    case "$status" in
+      installed) installed=$((installed + 1)) ;;
+      missing) missing=$((missing + 1)) ;;
+      *) unknown=$((unknown + 1)) ;;
+    esac
+    printf '%-5s  %-24s  %-9s  %-8s  %-8s  %s\n' "$(status_marker "$status")" "$id" "$category" "$tier" "$kind" "$summary"
+  done < <(emit_records "$tier_filter" "$category_filter" "$kind_filter" "$status_filter")
+  printf '\nSummary: %s total, %s installed, %s missing, %s unknown\n' "$total" "$installed" "$missing" "$unknown"
+}
+
+show_markdown() {
+  local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
+  local id category tier kind package command_name summary status
+
+  echo '| State | App | Category | Tier | Kind | Package | Command | Summary |'
+  echo '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  while IFS="$SEP" read -r id category tier kind package command_name summary status; do
+    [ -n "$id" ] || continue
+    printf '| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | %s |\n' \
+      "$status" "$id" "$category" "$tier" "$kind" "$package" "$command_name" "${summary//|/\\|}"
+  done < <(emit_records "$tier_filter" "$category_filter" "$kind_filter" "$status_filter")
+}
+
+show_json() {
+  local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq not found; cannot emit JSON" >&2
+    return 1
+  fi
+
+  emit_records "$tier_filter" "$category_filter" "$kind_filter" "$status_filter" | jq -Rn '
+    [inputs | split("\u001c") | {
+      id: .[0],
+      category: .[1],
+      tier: .[2],
+      kind: .[3],
+      package: .[4],
+      command: .[5],
+      summary: .[6],
+      status: .[7]
+    }] | {ok: true, apps: .}'
+}
+
+check_catalog() {
+  local failures=0 id category tier kind package command_name summary dup brew_pattern
+
+  if [ ! -f "$CATALOG" ]; then
+    echo "Missing catalog: ${CATALOG#$ROOT/}" >&2
+    return 1
+  fi
+
+  while IFS=$'\t' read -r id category tier kind package command_name summary; do
+    id="$(trim "${id:-}")"
+    [ -z "$id" ] && continue
+    [[ "$id" == '#'* ]] && continue
+
+    for value in category tier kind package command_name summary; do
+      if [ -z "${!value:-}" ]; then
+        echo "Missing $value for app: $id" >&2
+        failures=$((failures + 1))
+      fi
+    done
+
+    case "$tier" in core|dev|optional) ;; *) echo "Unknown tier for $id: $tier" >&2; failures=$((failures + 1)) ;; esac
+    case "$kind" in brew|cask) ;; *) echo "Unknown kind for $id: $kind" >&2; failures=$((failures + 1)) ;; esac
+
+    if [ -f "$BREWFILE" ]; then
+      brew_pattern="^${kind} \"${package}\""
+      if ! grep -Eq "$brew_pattern" "$BREWFILE"; then
+        echo "Missing in Brewfile: $kind $package" >&2
+        failures=$((failures + 1))
+      fi
+    fi
+  done <"$CATALOG"
+
+  dup="$(while IFS=$'\t' read -r id _; do id="$(trim "${id:-}")"; [ -n "$id" ] && [[ "$id" != '#'* ]] && printf '%s\n' "$id"; done <"$CATALOG" | sort | uniq -d)"
+  if [ -n "$dup" ]; then
+    while IFS= read -r id; do
+      [ -n "$id" ] || continue
+      echo "Duplicate app id: $id" >&2
+      failures=$((failures + 1))
+    done <<<"$dup"
+  fi
+
+  if [ "$failures" -gt 0 ]; then
+    echo "Apps catalog check failed ($failures issues)" >&2
+    return 1
+  fi
+
+  echo "Apps catalog check passed"
+}
+
+main() {
+  local mode="table" tier_filter="" category_filter="" kind_filter="" status_filter=""
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --tier)
+        shift
+        tier_filter="${1:-}"
+        [ -n "$tier_filter" ] || { echo "--tier requires a value" >&2; return 2; }
+        case "$tier_filter" in core|dev|optional) ;; *) echo "Unknown tier: $tier_filter" >&2; return 2 ;; esac
+        ;;
+      --category)
+        shift
+        category_filter="${1:-}"
+        [ -n "$category_filter" ] || { echo "--category requires a value" >&2; return 2; }
+        ;;
+      --kind)
+        shift
+        kind_filter="${1:-}"
+        [ -n "$kind_filter" ] || { echo "--kind requires a value" >&2; return 2; }
+        case "$kind_filter" in brew|cask) ;; *) echo "Unknown kind: $kind_filter" >&2; return 2 ;; esac
+        ;;
+      --status)
+        shift
+        status_filter="${1:-}"
+        [ -n "$status_filter" ] || { echo "--status requires a value" >&2; return 2; }
+        case "$status_filter" in installed|missing|unknown) ;; *) echo "Unknown status: $status_filter" >&2; return 2 ;; esac
+        ;;
+      --missing) status_filter="missing" ;;
+      --json) mode="json" ;;
+      --markdown) mode="markdown" ;;
+      --check) mode="check" ;;
+      -h|--help) usage; return 0 ;;
+      *) echo "Unknown option for dotfiles apps: $1" >&2; usage >&2; return 2 ;;
+    esac
+    shift
+  done
+
+  case "$mode" in
+    table) show_table "$tier_filter" "$category_filter" "$kind_filter" "$status_filter" ;;
+    markdown) show_markdown "$tier_filter" "$category_filter" "$kind_filter" "$status_filter" ;;
+    json) show_json "$tier_filter" "$category_filter" "$kind_filter" "$status_filter" ;;
+    check) check_catalog ;;
+  esac
+}
+
+main "$@"

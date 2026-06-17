@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SOURCE="$(realpath "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SOURCE")/.." && pwd)"
 BIN_DIR="$ROOT/bin"
 PREFIX="dotfiles"
 METADATA_SCAN_LIMIT=80
@@ -207,7 +208,7 @@ show_commands_markdown() {
     [ -n "$route" ] || continue
     usage="$route"
     [ -n "$args" ] && usage+=" $args"
-    printf '| `%s` | `%s` | %s |\n' "$usage" "$binary" "${summary//|/\\|}"
+    printf '| `%s` | `%s` | %s |\n' "${usage//|/\\|}" "$binary" "${summary//|/\\|}"
   done < <(records "$include_all")
 }
 

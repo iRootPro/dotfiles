@@ -1,0 +1,23 @@
+# id	type	path	summary
+alacritty	file	.config/alacritty/shared.toml	Shared Alacritty settings and keybindings
+apps	file	config/apps.tsv	Curated apps and CLI inventory
+brewfile	file	Brewfile	Homebrew packages, casks, and fonts
+cleanup	file	cleanup.sh	Audit-only cleanup script
+commands	doc	docs/commands.md	Generated dotfiles command reference
+doctor	file	doctor.sh	Dotfiles health checks
+fish	file	.config/fish/config.fish	Primary fish shell config
+fish-functions	dir	.config/fish/functions	Fish shell functions
+git-ignore	file	.config/git/ignore	Global gitignore
+gitconfig	file	.gitconfig.template	Git config template
+install	file	install.sh	Installer and symlink script
+kitty	file	.config/kitty/kitty.conf	Kitty terminal config and keybindings
+nvim	file	.config/nvim/init.lua	Neovim entrypoint
+opencode	file	.config/opencode/opencode.jsonc	Opencode config
+pi	doc	pi.md	Pi coding agent runbook
+pi-agent	dir	pi/agent	Non-secret Pi agent assets
+readme	doc	README.md	Repository overview
+starship	file	.config/starship/starship.toml	Starship prompt config
+tmux	file	.config/tmux/tmux.conf	Tmux config and keybindings
+tmux-scripts	dir	.config/tmux/scripts	Tmux helper scripts
+update	file	update.sh	Package and plugin update script
+zsh	file	.zshrc	Zsh fallback config

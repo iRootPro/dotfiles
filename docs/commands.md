@@ -11,10 +11,12 @@ dotfiles commands --markdown
 
 | Command | Binary | Summary |
 | --- | --- | --- |
+| `dotfiles apps [--tier TIER] [--category CATEGORY] [--kind KIND] [--status STATUS] [--missing] [--json\|--markdown\|--check]` | `dotfiles-apps` | Show curated app and CLI catalog |
 | `dotfiles cleanup` | `dotfiles-cleanup` | Show audit-only cleanup suggestions |
 | `dotfiles debug [--print]` | `dotfiles-debug` | Print safe diagnostic snapshot |
 | `dotfiles doctor` | `dotfiles-doctor` | Run dotfiles health checks |
 | `dotfiles install` | `dotfiles-install` | Install packages and symlink dotfiles |
+| `dotfiles open [TARGET] [--print\|--json\|--markdown\|--check]` | `dotfiles-open` | Open curated dotfiles targets in editor |
 | `dotfiles pi backup` | `dotfiles-pi-backup` | Back up non-secret Pi config into repo |
 | `dotfiles pi restore` | `dotfiles-pi-restore` | Restore non-secret Pi config from repo |
 | `dotfiles pi status` | `dotfiles-pi-status` | Show non-secret Pi config status |

@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Open curated dotfiles targets in editor
+# dotfiles:args=[TARGET] [--print|--json|--markdown|--check]
+# dotfiles:examples=dotfiles open | dotfiles open fish | dotfiles open apps --print
+
+set -euo pipefail
+
+SOURCE="$(realpath "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SOURCE")/.." && pwd)"
+TARGETS="$ROOT/config/targets.tsv"
+SEP=$'\034'
+
+usage() {
+  cat <<'EOF'
+Usage: dotfiles open [TARGET] [--print|--json|--markdown|--check]
+
+Open a curated dotfiles target in $DOTFILES_EDITOR, $EDITOR, nvim, vim, or vi.
+Without TARGET, list available targets.
+
+Options:
+  --print     Print the resolved target path instead of opening it
+  --json      Emit machine-readable JSON (requires jq)
+  --markdown  Emit a Markdown table
+  --check     Validate targets metadata and paths
+EOF
+}
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+records() {
+  local id target_type relpath summary abspath
+
+  while IFS=$'\t' read -r id target_type relpath summary; do
+    id="$(trim "${id:-}")"
+    [ -z "$id" ] && continue
+    [[ "$id" == '#'* ]] && continue
+    abspath="$ROOT/$relpath"
+    printf '%s%s%s%s%s%s%s%s%s\n' \
+      "$id" "$SEP" "$target_type" "$SEP" "$relpath" "$SEP" "$summary" "$SEP" "$abspath"
+  done <"$TARGETS"
+}
+
+show_table() {
+  local id target_type relpath summary abspath
+
+  printf '%-16s  %-4s  %-36s  %s\n' 'Target' 'Type' 'Path' 'Summary'
+  printf '%-16s  %-4s  %-36s  %s\n' '------' '----' '----' '-------'
+  while IFS="$SEP" read -r id target_type relpath summary abspath; do
+    [ -n "$id" ] || continue
+    printf '%-16s  %-4s  %-36s  %s\n' "$id" "$target_type" "$relpath" "$summary"
+  done < <(records)
+}
+
+show_markdown() {
+  local id target_type relpath summary abspath
+
+  echo '| Target | Type | Path | Summary |'
+  echo '| --- | --- | --- | --- |'
+  while IFS="$SEP" read -r id target_type relpath summary abspath; do
+    [ -n "$id" ] || continue
+    printf '| `%s` | `%s` | `%s` | %s |\n' "$id" "$target_type" "$relpath" "${summary//|/\\|}"
+  done < <(records)
+}
+
+show_json() {
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq not found; cannot emit JSON" >&2
+    return 1
+  fi
+
+  records | jq -Rn '
+    [inputs | split("\u001c") | {
+      id: .[0],
+      type: .[1],
+      path: .[2],
+      summary: .[3],
+      absolute_path: .[4]
+    }] | {ok: true, targets: .}'
+}
+
+check_targets() {
+  local failures=0 id target_type relpath summary dup
+
+  if [ ! -f "$TARGETS" ]; then
+    echo "Missing targets catalog: ${TARGETS#$ROOT/}" >&2
+    return 1
+  fi
+
+  while IFS=$'\t' read -r id target_type relpath summary; do
+    id="$(trim "${id:-}")"
+    [ -z "$id" ] && continue
+    [[ "$id" == '#'* ]] && continue
+
+    for value in target_type relpath summary; do
+      if [ -z "${!value:-}" ]; then
+        echo "Missing $value for target: $id" >&2
+        failures=$((failures + 1))
+      fi
+    done
+
+    case "$target_type" in file|dir|doc) ;; *) echo "Unknown type for $id: $target_type" >&2; failures=$((failures + 1)) ;; esac
+    case "$relpath" in /*|../*|*/../*) echo "Unsafe path for $id: $relpath" >&2; failures=$((failures + 1)) ;; esac
+
+    if [ ! -e "$ROOT/$relpath" ]; then
+      echo "Missing target path for $id: $relpath" >&2
+      failures=$((failures + 1))
+    fi
+  done <"$TARGETS"
+
+  dup="$(while IFS=$'\t' read -r id _; do id="$(trim "${id:-}")"; [ -n "$id" ] && [[ "$id" != '#'* ]] && printf '%s\n' "$id"; done <"$TARGETS" | sort | uniq -d)"
+  if [ -n "$dup" ]; then
+    while IFS= read -r id; do
+      [ -n "$id" ] || continue
+      echo "Duplicate target id: $id" >&2
+      failures=$((failures + 1))
+    done <<<"$dup"
+  fi
+
+  if [ "$failures" -gt 0 ]; then
+    echo "Targets check failed ($failures issues)" >&2
+    return 1
+  fi
+
+  echo "Targets check passed"
+}
+
+target_path() {
+  local wanted="$1" id target_type relpath summary abspath
+
+  while IFS="$SEP" read -r id target_type relpath summary abspath; do
+    if [ "$id" = "$wanted" ]; then
+      printf '%s\n' "$abspath"
+      return 0
+    fi
+  done < <(records)
+
+  echo "Unknown target: $wanted" >&2
+  echo "Run 'dotfiles open' to list available targets." >&2
+  return 127
+}
+
+choose_editor() {
+  if [ -n "${DOTFILES_EDITOR:-}" ]; then
+    printf '%s\n' "$DOTFILES_EDITOR"
+  elif [ -n "${EDITOR:-}" ]; then
+    printf '%s\n' "$EDITOR"
+  elif command -v nvim >/dev/null 2>&1; then
+    printf 'nvim\n'
+  elif command -v vim >/dev/null 2>&1; then
+    printf 'vim\n'
+  else
+    printf 'vi\n'
+  fi
+}
+
+open_target() {
+  local wanted="$1" path editor
+  local -a editor_cmd
+
+  path="$(target_path "$wanted")"
+  [ -e "$path" ] || { echo "Target path does not exist: $path" >&2; return 1; }
+
+  editor="$(choose_editor)"
+  IFS=' ' read -r -a editor_cmd <<<"$editor"
+  "${editor_cmd[@]}" "$path"
+}
+
+main() {
+  local mode="table" target="" print_path="false"
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --print) print_path="true" ;;
+      --json) mode="json" ;;
+      --markdown) mode="markdown" ;;
+      --check) mode="check" ;;
+      -h|--help) usage; return 0 ;;
+      --*) echo "Unknown option for dotfiles open: $1" >&2; usage >&2; return 2 ;;
+      *)
+        if [ -n "$target" ]; then
+          echo "Only one target can be opened at a time" >&2
+          return 2
+        fi
+        target="$1"
+        ;;
+    esac
+    shift
+  done
+
+  case "$mode" in
+    json) show_json ;;
+    markdown) show_markdown ;;
+    check) check_targets ;;
+    table)
+      if [ -z "$target" ]; then
+        show_table
+      elif [ "$print_path" = "true" ]; then
+        target_path "$target"
+      else
+        open_target "$target"
+      fi
+      ;;
+  esac
+}
+
+main "$@"

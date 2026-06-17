@@ -254,11 +254,28 @@ check_dotfiles_cli() {
     fail "dotfiles commands --check"
   fi
 
+  if "$ROOT/bin/dotfiles" apps --check >/dev/null 2>&1; then
+    pass "dotfiles apps --check"
+  else
+    fail "dotfiles apps --check"
+  fi
+
+  if "$ROOT/bin/dotfiles" open --check >/dev/null 2>&1; then
+    pass "dotfiles open --check"
+  else
+    fail "dotfiles open --check"
+  fi
+
   local installed
   installed="$(command -v dotfiles 2>/dev/null || true)"
   if [ -n "$installed" ]; then
     if [ "$(realpath "$installed" 2>/dev/null)" = "$(realpath "$ROOT/bin/dotfiles" 2>/dev/null)" ]; then
       pass "dotfiles in PATH -> $ROOT/bin/dotfiles"
+      if dotfiles commands --check >/dev/null 2>&1; then
+        pass "installed dotfiles commands --check"
+      else
+        fail "installed dotfiles commands --check"
+      fi
     else
       warn "dotfiles in PATH points to $installed"
     fi
