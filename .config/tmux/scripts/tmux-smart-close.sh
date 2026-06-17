@@ -10,7 +10,9 @@ if [ "$window_panes" -gt 1 ]; then
 fi
 
 if [ "$session_windows" -gt 1 ]; then
-  exec tmux unlink-window -k
+  tmux unlink-window -k
+  tmux move-window -r -t "$current_session" 2>/dev/null || true
+  exit 0
 fi
 
 replacement="$(tmux list-sessions -F '#{session_id}' | grep -vxF "$current_session" | head -n 1 || true)"
