@@ -14,12 +14,12 @@ step() {
 
 usage() {
   cat <<'EOF'
-Usage: ./update.sh [plugins|packages|nvim|zsh|tmux|go|all]
+Usage: ./update.sh [plugins|packages|nvim|tmux|go|all]
 
 Default: plugins
 
 Modes:
-  plugins   Update Neovim, Zsh, Tmux plugins and Go dev tools
+  plugins   Update Neovim, Tmux plugins and Go dev tools
   packages  Update system packages only, with confirmation
   all       Run packages + plugins
 EOF
@@ -62,14 +62,6 @@ update_nvim() {
   fi
 }
 
-# --- Zinit плагины ---
-update_zinit() {
-  step "Zinit плагины"
-  if [ -d "${XDG_DATA_HOME:-$HOME/.local/share}/zinit" ]; then
-    zsh -ic "zinit update --all" 2>/dev/null && green "  ✓ zinit" || yellow "  Пропущено"
-  fi
-}
-
 # --- Tmux плагины ---
 update_tmux() {
   step "Tmux плагины"
@@ -83,7 +75,6 @@ update_tmux() {
 
 update_plugins() {
   update_nvim
-  update_zinit
   update_tmux
   update_go
 }
@@ -116,7 +107,6 @@ main() {
     packages) update_packages ;;
     plugins) update_plugins ;;
     nvim) update_nvim ;;
-    zsh) update_zinit ;;
     tmux) update_tmux ;;
     go) update_go ;;
     all) update_packages; update_plugins ;;

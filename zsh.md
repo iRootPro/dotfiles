@@ -1,12 +1,12 @@
 # Zsh Configuration
 
-Конфиг: `~/.zshrc` | Промпт: `~/.config/starship/starship.toml`
+Fallback-конфиг: `~/.zshrc` | Промпт: `~/.config/starship/starship.toml`
 
 ## Структура
 
 ```
 ~/.zprofile          # brew shellenv (загружается при логине)
-~/.zshrc             # основной конфиг (загружается при каждом терминале)
+~/.zshrc             # fallback-конфиг, если запускается zsh
 ~/.config/starship/  # настройки промпта (тема Catppuccin Mocha)
 ```
 
