@@ -44,6 +44,7 @@ kill_window() {
 
   if [ "$windows" -gt 1 ]; then
     tmux unlink-window -k -t "$window_id" 2>/dev/null || true
+    tmux move-window -r -t "$session_id" 2>/dev/null || true
     exit 0
   fi
 
