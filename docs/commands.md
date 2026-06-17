@@ -15,7 +15,7 @@ dotfiles commands --markdown
 | `dotfiles apps [--tier TIER] [--category CATEGORY] [--kind KIND] [--status STATUS] [--missing] [--json\|--markdown\|--check]` | `dotfiles-apps` | Show curated app and CLI catalog |
 | `dotfiles cleanup` | `dotfiles-cleanup` | Show audit-only cleanup suggestions |
 | `dotfiles debug [--print]` | `dotfiles-debug` | Print safe diagnostic snapshot |
-| `dotfiles doctor` | `dotfiles-doctor` | Run dotfiles health checks |
+| `dotfiles doctor [--summary\|--json]` | `dotfiles-doctor` | Run dotfiles health checks |
 | `dotfiles install` | `dotfiles-install` | Install packages and symlink dotfiles |
 | `dotfiles open [TARGET] [--print\|--json\|--markdown\|--check]` | `dotfiles-open` | Open curated dotfiles targets in editor |
 | `dotfiles pi backup` | `dotfiles-pi-backup` | Back up non-secret Pi config into repo |

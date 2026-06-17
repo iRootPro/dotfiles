@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Run dotfiles health checks
-# dotfiles:examples=dotfiles doctor
+# dotfiles:args=[--summary|--json]
+# dotfiles:examples=dotfiles doctor | dotfiles doctor --summary | dotfiles doctor --json
 # dotfiles:aliases=dotfiles check
 
 set -euo pipefail

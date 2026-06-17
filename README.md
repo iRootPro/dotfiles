@@ -118,6 +118,7 @@ dotfiles commands --json
 dotfiles commands --markdown
 dotfiles commands --check
 dotfiles actions --json
+dotfiles doctor --summary
 dotfiles apps --missing
 dotfiles open fish --print
 dotfiles pi status

@@ -3,6 +3,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OS="$(uname -s)"
+mode="full"
 checks=0
 failures=0
 warnings=0
@@ -11,25 +12,27 @@ green() { printf "\033[32m%s\033[0m\n" "$1"; }
 yellow() { printf "\033[33m%s\033[0m\n" "$1"; }
 red() { printf "\033[31m%s\033[0m\n" "$1"; }
 dim() { printf "\033[2m%s\033[0m\n" "$1"; }
+emit() { [ "$mode" = "full" ] && printf '%s\n' "$1"; }
 
 pass() {
   checks=$((checks + 1))
-  green "  OK   $1"
+  [ "$mode" = "full" ] && green "  OK   $1"
 }
 
 warn() {
   checks=$((checks + 1))
   warnings=$((warnings + 1))
-  yellow "  WARN $1"
+  [ "$mode" = "full" ] && yellow "  WARN $1"
 }
 
 fail() {
   checks=$((checks + 1))
   failures=$((failures + 1))
-  red "  FAIL $1"
+  [ "$mode" = "full" ] && red "  FAIL $1"
 }
 
 section() {
+  [ "$mode" = "full" ] || return 0
   printf '\n'
   green "-- $1 --"
 }
@@ -117,7 +120,7 @@ check_config_drift() {
     pass "no tracked $old_path references"
   else
     fail "tracked $old_path references remain"
-    printf '%s\n' "$old_refs"
+    [ "$mode" = "full" ] && printf '%s\n' "$old_refs"
   fi
 
   if [ -f "$ROOT/.config/alacritty/shared.toml" ]; then
@@ -318,7 +321,7 @@ check_git_safety() {
   while IFS= read -r path; do
     case "$path" in
       .env|.env.*|*.pem|*.key|*token*|*credentials*|client_secret*.json|client_secrets*.json|.config/gh/hosts.yml|.config/fish/fish_variables|pi/agent/auth.json|pi/agent/sessions/*|pi/youtube_credentials/*)
-        red "  FAIL tracked secret-like path: $path"
+        [ "$mode" = "full" ] && red "  FAIL tracked secret-like path: $path"
         tracked_secret=1
         ;;
     esac
@@ -374,10 +377,33 @@ check_tmux_live() {
 }
 
 main() {
-  printf '\n'
-  green "Dotfiles doctor"
-  dim "root: $ROOT"
-  dim "os:   $OS"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --summary) mode="summary" ;;
+      --json) mode="json" ;;
+      -h|--help)
+        cat <<'EOF'
+Usage: ./doctor.sh [--summary|--json]
+
+Run dotfiles health checks.
+
+Options:
+  --summary  Print one-line machine-friendly status
+  --json     Emit JSON summary (requires jq)
+EOF
+        return 0
+        ;;
+      *) echo "Unknown option for doctor.sh: $1" >&2; return 2 ;;
+    esac
+    shift
+  done
+
+  if [ "$mode" = "full" ]; then
+    printf '\n'
+    green "Dotfiles doctor"
+    dim "root: $ROOT"
+    dim "os:   $OS"
+  fi
 
   check_required_commands
   check_primary_shell
@@ -390,18 +416,40 @@ main() {
   check_git_safety
   check_tmux_live
 
-  printf '\n'
-  if [ "$failures" -gt 0 ]; then
+  [ "$mode" = "full" ] && printf '\n'
+
+  if [ "$mode" = "json" ]; then
+    if command -v jq >/dev/null 2>&1; then
+      jq -n \
+        --arg root "$ROOT" \
+        --arg os "$OS" \
+        --argjson checks "$checks" \
+        --argjson failures "$failures" \
+        --argjson warnings "$warnings" \
+        '{ok: ($failures == 0), root: $root, os: $os, checks: $checks, failures: $failures, warnings: $warnings}'
+    else
+      printf '{"ok":%s,"root":"%s","os":"%s","checks":%s,"failures":%s,"warnings":%s}\n' \
+        "$([ "$failures" -eq 0 ] && printf true || printf false)" "$ROOT" "$OS" "$checks" "$failures" "$warnings"
+    fi
+  elif [ "$mode" = "summary" ]; then
+    if [ "$failures" -gt 0 ]; then
+      printf 'FAIL %s failures, %s warnings, %s checks\n' "$failures" "$warnings" "$checks"
+    elif [ "$warnings" -gt 0 ]; then
+      printf 'WARN %s warnings, %s checks\n' "$warnings" "$checks"
+    else
+      printf 'OK %s checks\n' "$checks"
+    fi
+  elif [ "$failures" -gt 0 ]; then
     red "Result: $failures failures, $warnings warnings, $checks checks"
+  elif [ "$warnings" -gt 0 ]; then
+    yellow "Result: $warnings warnings, $checks checks"
+  else
+    green "Result: all $checks checks passed"
+  fi
+
+  if [ "$failures" -gt 0 ]; then
     exit 1
   fi
-
-  if [ "$warnings" -gt 0 ]; then
-    yellow "Result: $warnings warnings, $checks checks"
-    exit 0
-  fi
-
-  green "Result: all $checks checks passed"
 }
 
 main "$@"
