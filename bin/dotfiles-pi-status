@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Show non-secret Pi config status
+# dotfiles:examples=dotfiles pi status
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/scripts/pi-sync.sh" status "$@"

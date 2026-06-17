@@ -1,0 +1,399 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BIN_DIR="$ROOT/bin"
+PREFIX="dotfiles"
+METADATA_SCAN_LIMIT=80
+SEP=$'\034'
+
+join_words() {
+  local separator="$1" joined="" word
+  shift
+
+  for word in "$@"; do
+    if [ -z "$joined" ]; then
+      joined="$word"
+    else
+      joined+="$separator$word"
+    fi
+  done
+
+  printf '%s' "$joined"
+}
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+append_pipe_value() {
+  local current="$1" addition="$2"
+
+  if [ -z "$current" ]; then
+    printf '%s' "$addition"
+  else
+    printf '%s|%s' "$current" "$addition"
+  fi
+}
+
+command_files() {
+  local file
+  for file in "$BIN_DIR"/dotfiles-*; do
+    [ -f "$file" ] || continue
+    printf '%s\n' "$file"
+  done
+}
+
+record_for_file() {
+  local file="$1"
+  local binary stem route summary args examples aliases hidden has_summary line line_count key value
+
+  binary="${file##*/}"
+  stem="${binary#dotfiles-}"
+  route="$PREFIX ${stem//-/ }"
+  summary=""
+  args=""
+  examples=""
+  aliases=""
+  hidden="false"
+  has_summary="false"
+  line_count=0
+
+  while IFS= read -r line && [ "$line_count" -lt "$METADATA_SCAN_LIMIT" ]; do
+    line_count=$((line_count + 1))
+
+    if [ "$line_count" -eq 1 ] && [[ "$line" == '#!'* ]]; then
+      continue
+    fi
+    [ -z "$(trim "$line")" ] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] || break
+
+    if [[ "$line" =~ ^[[:space:]]*#[[:space:]]*dotfiles:([[:alnum:]_-]+)=(.*)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      value="${BASH_REMATCH[2]}"
+      value="${value%$'\r'}"
+      value="${value//$'\t'/ }"
+
+      case "$key" in
+        route)
+          route="$value"
+          ;;
+        summary)
+          summary="$value"
+          [ -n "$value" ] && has_summary="true"
+          ;;
+        args)
+          args="$value"
+          ;;
+        examples)
+          examples="$value"
+          ;;
+        alias|aliases)
+          aliases="$value"
+          ;;
+        hidden)
+          [ "$value" = "true" ] && hidden="true"
+          ;;
+      esac
+    fi
+  done <"$file"
+
+  [ -n "$summary" ] || summary="Run ${stem//-/ }"
+
+  printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' \
+    "$route" "$SEP" "$binary" "$SEP" "$summary" "$SEP" "$args" "$SEP" "$examples" "$SEP" "$aliases" "$SEP" "$hidden" "$SEP" "$has_summary"
+}
+
+records() {
+  local include_all="${1:-false}" file hidden
+  while IFS= read -r file; do
+    [ -x "$file" ] || continue
+    hidden="$(record_for_file "$file" | cut -d "$SEP" -f7)"
+    if [ "$include_all" != "true" ] && [ "$hidden" = "true" ]; then
+      continue
+    fi
+    record_for_file "$file"
+  done < <(command_files) | sort
+}
+
+examples_lines() {
+  local value="$1" old_ifs item
+  old_ifs="$IFS"
+  IFS='|'
+  for item in $value; do
+    item="$(trim "$item")"
+    [ -n "$item" ] && printf '%s\n' "$item"
+  done
+  IFS="$old_ifs"
+}
+
+show_main_help() {
+  cat <<EOF
+Dotfiles command center
+
+Usage:
+  $PREFIX <command> [args...]
+  $PREFIX commands [--all] [--json] [--markdown] [--check]
+  $PREFIX <group> --help
+
+Common commands:
+  $PREFIX status             Show repo status and recent commits
+  $PREFIX doctor             Run dotfiles health checks
+  $PREFIX update             Update plugins/tools (default mode)
+  $PREFIX cleanup            Show audit-only cleanup suggestions
+  $PREFIX pi status          Show non-secret Pi config status
+  $PREFIX debug --print      Print safe diagnostic snapshot
+
+Discovery:
+  $PREFIX commands           List documented commands
+  $PREFIX commands --json    Machine-readable command list
+  $PREFIX commands --check   Validate command metadata and routes
+EOF
+}
+
+show_commands_help() {
+  cat <<EOF
+Usage:
+  $PREFIX commands [--all] [--json] [--markdown] [--check]
+
+List commands known to the dotfiles command center.
+
+Options:
+  --all       Include commands explicitly marked hidden
+  --json      Emit machine-readable JSON (requires jq)
+  --markdown  Emit a Markdown command table
+  --check     Validate command metadata and route collisions
+EOF
+}
+
+print_table() {
+  local rows="$1" command rest max_width=0 width
+
+  while IFS=$'\t' read -r command rest; do
+    [ -n "$command" ] || continue
+    width=${#command}
+    [ "$width" -gt "$max_width" ] && max_width=$width
+  done <<<"$rows"
+
+  while IFS=$'\t' read -r command rest; do
+    [ -n "$command" ] || continue
+    printf '  %-*s  %s\n' "$max_width" "$command" "$rest"
+  done <<<"$rows"
+}
+
+show_commands() {
+  local include_all="$1" rows="" route binary summary args examples aliases hidden has_summary usage
+
+  while IFS="$SEP" read -r route binary summary args examples aliases hidden has_summary; do
+    [ -n "$route" ] || continue
+    usage="$route"
+    [ -n "$args" ] && usage+=" $args"
+    rows+="$usage"$'\t'"$summary"$'\n'
+  done < <(records "$include_all")
+
+  echo "Dotfiles commands:"
+  print_table "$rows"
+}
+
+show_commands_markdown() {
+  local include_all="$1" route binary summary args examples aliases hidden has_summary usage
+
+  echo '| Command | Binary | Summary |'
+  echo '| --- | --- | --- |'
+  while IFS="$SEP" read -r route binary summary args examples aliases hidden has_summary; do
+    [ -n "$route" ] || continue
+    usage="$route"
+    [ -n "$args" ] && usage+=" $args"
+    printf '| `%s` | `%s` | %s |\n' "$usage" "$binary" "${summary//|/\\|}"
+  done < <(records "$include_all")
+}
+
+show_commands_json() {
+  local include_all="$1"
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq not found; cannot emit JSON" >&2
+    return 1
+  fi
+
+  records "$include_all" | jq -Rn '
+    [inputs | split("\u001c") | {
+      route: .[0],
+      binary: .[1],
+      summary: .[2],
+      args: .[3],
+      examples: (.[4] | split("|") | map(gsub("^ +| +$"; "")) | map(select(length > 0))),
+      aliases: (.[5] | split("|") | map(gsub("^ +| +$"; "")) | map(select(length > 0))),
+      hidden: (.[6] == "true")
+    }] | {ok: true, commands: .}'
+}
+
+show_commands_check() {
+  local failures=0 file route binary summary args examples aliases hidden has_summary dup
+
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    if [ ! -x "$file" ]; then
+      echo "Not executable: ${file#$ROOT/}" >&2
+      failures=$((failures + 1))
+    fi
+
+    IFS="$SEP" read -r route binary summary args examples aliases hidden has_summary < <(record_for_file "$file")
+    if [ "$has_summary" != "true" ]; then
+      echo "Missing metadata summary: $binary" >&2
+      failures=$((failures + 1))
+    fi
+  done < <(command_files)
+
+  dup="$(while IFS= read -r file; do record_for_file "$file" | cut -d "$SEP" -f1; done < <(command_files) | sort | uniq -d)"
+  if [ -n "$dup" ]; then
+    while IFS= read -r route; do
+      [ -n "$route" ] || continue
+      echo "Route collision: $route" >&2
+      failures=$((failures + 1))
+    done <<<"$dup"
+  fi
+
+  if [ "$failures" -gt 0 ]; then
+    echo "Command metadata check failed ($failures issues)" >&2
+    return 1
+  fi
+
+  echo "Command metadata check passed"
+}
+
+parse_commands_args() {
+  local include_all="false" mode="table"
+  shift
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --all) include_all="true" ;;
+      --json) mode="json" ;;
+      --markdown) mode="markdown" ;;
+      --check) mode="check" ;;
+      -h|--help) show_commands_help; return 0 ;;
+      *) echo "Unknown option for $PREFIX commands: $1" >&2; show_commands_help >&2; return 2 ;;
+    esac
+    shift
+  done
+
+  case "$mode" in
+    json) show_commands_json "$include_all" ;;
+    markdown) show_commands_markdown "$include_all" ;;
+    check) show_commands_check ;;
+    *) show_commands "$include_all" ;;
+  esac
+}
+
+show_group_help() {
+  local group="$1" rows="" route binary summary args examples aliases hidden has_summary usage
+
+  while IFS="$SEP" read -r route binary summary args examples aliases hidden has_summary; do
+    [ -n "$route" ] || continue
+    [[ "$route" == "$PREFIX $group "* ]] || continue
+    usage="$route"
+    [ -n "$args" ] && usage+=" $args"
+    rows+="$usage"$'\t'"$summary"$'\n'
+  done < <(records false)
+
+  [ -n "$rows" ] || return 1
+  echo "${group^} commands:"
+  print_table "$rows"
+}
+
+route_matches_aliases() {
+  local route="$1" aliases="$2" old_ifs item
+  old_ifs="$IFS"
+  IFS='|'
+  for item in $aliases; do
+    item="$(trim "$item")"
+    if [ "$item" = "$route" ]; then
+      IFS="$old_ifs"
+      return 0
+    fi
+  done
+  IFS="$old_ifs"
+  return 1
+}
+
+show_command_help() {
+  local route="$1" binary="$2" summary="$3" args="$4" examples="$5" aliases="$6" example alias
+
+  echo "Usage:"
+  printf '  %s' "$route"
+  [ -n "$args" ] && printf ' %s' "$args"
+  printf '\n\n%s\n' "$summary"
+
+  if [ -n "$examples" ]; then
+    echo ""
+    echo "Examples:"
+    while IFS= read -r example; do
+      printf '  %s\n' "$example"
+    done < <(examples_lines "$examples")
+  fi
+
+  if [ -n "$aliases" ]; then
+    echo ""
+    echo "Aliases:"
+    while IFS= read -r alias; do
+      printf '  %s\n' "$alias"
+    done < <(examples_lines "$aliases")
+  fi
+
+  echo ""
+  echo "Binary:"
+  echo "  $binary"
+}
+
+dispatch() {
+  local args=("$@") count prefix_count route route_candidate route_binary route_summary route_args route_examples route_aliases route_hidden route_has_summary file remaining
+
+  count=$#
+  for ((prefix_count = count; prefix_count >= 1; prefix_count--)); do
+    route_candidate="$PREFIX $(join_words " " "${args[@]:0:prefix_count}")"
+    while IFS="$SEP" read -r route route_binary route_summary route_args route_examples route_aliases route_hidden route_has_summary; do
+      [ -n "$route" ] || continue
+      if [ "$route" = "$route_candidate" ] || route_matches_aliases "$route_candidate" "$route_aliases"; then
+        remaining=("${args[@]:prefix_count}")
+        if [ "${remaining[0]:-}" = "--help" ] || [ "${remaining[0]:-}" = "-h" ]; then
+          show_command_help "$route" "$route_binary" "$route_summary" "$route_args" "$route_examples" "$route_aliases"
+          return 0
+        fi
+        file="$BIN_DIR/$route_binary"
+        exec "$file" "${remaining[@]}"
+      fi
+    done < <(records true)
+  done
+
+  if [ "$#" -eq 1 ] && show_group_help "$1"; then
+    return 0
+  fi
+
+  echo "Unknown dotfiles command: $PREFIX $*" >&2
+  echo "Run '$PREFIX commands' to discover available commands." >&2
+  return 127
+}
+
+main() {
+  if [ "$#" -eq 0 ]; then
+    show_main_help
+    return 0
+  fi
+
+  case "$1" in
+    -h|--help)
+      show_main_help
+      ;;
+    commands)
+      parse_commands_args "$@"
+      ;;
+    *)
+      dispatch "$@"
+      ;;
+  esac
+}
+
+main "$@"

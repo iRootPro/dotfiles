@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Reload tmux config
+# dotfiles:examples=dotfiles tmux reload
+
+set -euo pipefail
+
+if [ -z "${TMUX:-}" ]; then
+  echo "dotfiles tmux reload: not inside tmux" >&2
+  exit 1
+fi
+
+tmux source-file "$HOME/.config/tmux/tmux.conf"
+tmux display-message "tmux config reloaded"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Install packages and symlink dotfiles
+# dotfiles:examples=dotfiles install
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/install.sh" "$@"

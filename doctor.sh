@@ -232,6 +232,39 @@ check_fish_config() {
   fi
 }
 
+check_dotfiles_cli() {
+  section "Dotfiles CLI"
+
+  if [ -x "$ROOT/bin/dotfiles" ]; then
+    pass "bin/dotfiles executable"
+  else
+    fail "bin/dotfiles missing or not executable"
+    return 0
+  fi
+
+  if bash -n "$ROOT/bin/dotfiles" 2>/dev/null; then
+    pass "syntax bin/dotfiles"
+  else
+    fail "syntax bin/dotfiles"
+  fi
+
+  if "$ROOT/bin/dotfiles" commands --check >/dev/null 2>&1; then
+    pass "dotfiles commands --check"
+  else
+    fail "dotfiles commands --check"
+  fi
+
+  local installed
+  installed="$(command -v dotfiles 2>/dev/null || true)"
+  if [ -n "$installed" ]; then
+    if [ "$(realpath "$installed" 2>/dev/null)" = "$(realpath "$ROOT/bin/dotfiles" 2>/dev/null)" ]; then
+      pass "dotfiles in PATH -> $ROOT/bin/dotfiles"
+    else
+      warn "dotfiles in PATH points to $installed"
+    fi
+  fi
+}
+
 check_brewfile() {
   [ "$OS" = "Darwin" ] || return 0
   [ -f "$ROOT/Brewfile" ] || return 0
@@ -329,6 +362,7 @@ main() {
   check_symlinks
   check_shell_scripts
   check_fish_config
+  check_dotfiles_cli
   check_brewfile
   check_git_safety
   check_tmux_live

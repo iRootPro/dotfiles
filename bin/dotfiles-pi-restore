@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Restore non-secret Pi config from repo
+# dotfiles:examples=dotfiles pi restore | dotfiles pi restore --dry-run
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/scripts/pi-sync.sh" "$@" restore

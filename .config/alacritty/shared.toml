@@ -66,9 +66,7 @@ key = "Comma"
 mods = "Command"
 
 [[keyboard.bindings]]
-chars = """
-:Commands
-"""
+chars = "\u0002\u0010"
 key = "P"
 mods = "Command|Shift"
 

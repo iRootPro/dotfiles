@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Reload fish and tmux config when available
+# dotfiles:examples=dotfiles reload
+
+set -euo pipefail
+
+if command -v fish >/dev/null 2>&1; then
+  fish -lc 'functions -q dotreload; and dotreload; or source ~/.config/fish/config.fish'
+elif [ -f "$HOME/.zshrc" ]; then
+  echo "fish not found; reload your shell manually"
+fi
+
+if [ -n "${TMUX:-}" ]; then
+  tmux source-file "$HOME/.config/tmux/tmux.conf"
+  tmux display-message "dotfiles: tmux reloaded"
+fi

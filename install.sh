@@ -12,9 +12,18 @@ red() { printf "\033[31m%s\033[0m\n" "$1"; }
 # --- Симлинк с бэкапом ---
 link() {
   local src="$1" dst="$2"
-  local backup
+  local backup src_real dst_real
 
   mkdir -p "$(dirname "$dst")"
+
+  src_real="$(realpath "$src")"
+  if [ -e "$dst" ] || [ -L "$dst" ]; then
+    dst_real="$(realpath "$dst" 2>/dev/null || true)"
+    if [ -n "$dst_real" ] && [ "$dst_real" = "$src_real" ]; then
+      green "  ✓ $dst уже настроен"
+      return
+    fi
+  fi
 
   if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
     green "  ✓ $dst уже настроен"
@@ -167,6 +176,11 @@ link_configs() {
   # Файлы в домашней директории
   link "$DOTFILES/.zshrc" "$HOME/.zshrc"
   link "$DOTFILES/.tmux.conf" "$HOME/.tmux.conf"
+
+  # Локальные команды dotfiles
+  if [ -x "$DOTFILES/bin/dotfiles" ]; then
+    link "$DOTFILES/bin/dotfiles" "$HOME/.local/bin/dotfiles"
+  fi
 
   # gitconfig из шаблона (не перезаписывает существующий)
   if [ ! -f "$HOME/.gitconfig" ]; then

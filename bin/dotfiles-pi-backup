@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Back up non-secret Pi config into repo
+# dotfiles:examples=dotfiles pi backup | dotfiles pi backup --dry-run
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/scripts/pi-sync.sh" "$@" backup

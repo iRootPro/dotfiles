@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Show repo status and recent commits
+# dotfiles:examples=dotfiles status
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "Dotfiles status"
+echo "root: $ROOT"
+echo ""
+git -C "$ROOT" status --short
+echo ""
+git -C "$ROOT" log --oneline -5
+echo ""
+echo "Run: dotfiles doctor"

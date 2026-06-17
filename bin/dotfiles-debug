@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Print safe diagnostic snapshot
+# dotfiles:args=[--print]
+# dotfiles:examples=dotfiles debug --print
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PRINT_ONLY=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --print) PRINT_ONLY=true ;;
+    -h|--help)
+      echo "Usage: dotfiles debug [--print]"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      echo "Usage: dotfiles debug [--print]" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+if [ "$PRINT_ONLY" != "true" ]; then
+  echo "Use --print to emit the diagnostic snapshot."
+  echo "No files are uploaded or written by this command."
+  exit 0
+fi
+
+echo "Dotfiles debug"
+echo "date: $(date)"
+echo "root: $ROOT"
+echo "os: $(uname -s)"
+echo "shell: ${SHELL:-unknown}"
+echo "user: ${USER:-unknown}"
+echo ""
+
+echo "== git status =="
+git -C "$ROOT" status --short || true
+echo ""
+
+echo "== recent commits =="
+git -C "$ROOT" log --oneline -5 || true
+echo ""
+
+echo "== dotfiles commands =="
+"$ROOT/bin/dotfiles" commands --check || true
+echo ""
+
+echo "== symlink summary =="
+for path in fish nvim kitty tmux starship opencode; do
+  src="$ROOT/.config/$path"
+  dst="$HOME/.config/$path"
+  if [ -e "$src" ] && [ -e "$dst" ] && [ "$(realpath "$dst" 2>/dev/null)" = "$(realpath "$src" 2>/dev/null)" ]; then
+    printf '%s -> %s\n' "$dst" "$src"
+  elif [ -L "$dst" ]; then
+    printf '%s points to %s\n' "$dst" "$(readlink "$dst")"
+  elif [ -e "$dst" ]; then
+    printf '%s exists but is not a symlink\n' "$dst"
+  else
+    printf '%s missing\n' "$dst"
+  fi
+done
+echo ""
+
+echo "== package/tool status =="
+for cmd in git fish tmux nvim jq rg fd bat delta starship zoxide opencode; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    printf 'OK   %s %s\n' "$cmd" "$(command -v "$cmd")"
+  else
+    printf 'MISS %s\n' "$cmd"
+  fi
+done
+echo ""
+
+echo "== risky ignored paths present =="
+for path in \
+  "$ROOT/.config/opencode/node_modules" \
+  "$ROOT/.config/opencode/package-lock.json" \
+  "$ROOT/.config/opencode/bun.lock" \
+  "$ROOT/.config/fish/fish_variables" \
+  "$ROOT/.config/gh/hosts.yml"; do
+  [ -e "$path" ] && printf 'present: %s\n' "${path#$ROOT/}"
+done
+echo ""
+
+echo "== pi config =="
+"$ROOT/scripts/pi-sync.sh" status 2>/dev/null || true

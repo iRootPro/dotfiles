@@ -84,6 +84,11 @@ cd ~/dotfiles
 ## Обслуживание
 
 ```bash
+# Единый CLI для dotfiles
+dotfiles commands
+dotfiles status
+dotfiles doctor
+
 # Обновить плагины Neovim/Tmux и Go dev tools
 ./update.sh
 
@@ -98,6 +103,18 @@ cd ~/dotfiles
 
 # Посмотреть/восстановить non-secret Pi config
 ./scripts/pi-sync.sh status
+```
+
+`dotfiles` — единый command center поверх существующих скриптов. Он не заменяет
+`install.sh`, `doctor.sh`, `update.sh` и `cleanup.sh`, а даёт стабильные команды
+для shell, tmux command palette и AI-агентов:
+
+```bash
+dotfiles commands --json
+dotfiles commands --markdown
+dotfiles commands --check
+dotfiles pi status
+dotfiles debug --print
 ```
 
 ## Перенос на новую машину

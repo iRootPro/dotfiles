@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Show audit-only cleanup suggestions
+# dotfiles:examples=dotfiles cleanup
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/cleanup.sh" "$@"

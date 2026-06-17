@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Update plugins, tools, or packages
+# dotfiles:args=[plugins|packages|nvim|tmux|go|all]
+# dotfiles:examples=dotfiles update | dotfiles update packages
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/update.sh" "$@"
