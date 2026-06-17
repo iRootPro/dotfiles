@@ -81,6 +81,32 @@ check_required_commands() {
   check_optional_command opencode
 }
 
+check_primary_shell() {
+  section "Primary Shell"
+
+  local fish_path login_shell
+  fish_path="$(command -v fish 2>/dev/null || true)"
+  if [ -n "$fish_path" ]; then
+    pass "fish at $fish_path"
+  else
+    fail "fish not found"
+    return 0
+  fi
+
+  login_shell=""
+  if [ "$OS" = "Darwin" ] && command -v dscl >/dev/null 2>&1; then
+    login_shell="$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')"
+  elif command -v getent >/dev/null 2>&1; then
+    login_shell="$(getent passwd "$USER" 2>/dev/null | cut -d: -f7)"
+  fi
+
+  case "${login_shell##*/}" in
+    fish) pass "login shell $login_shell" ;;
+    "") warn "login shell unknown; expected fish" ;;
+    *) warn "login shell $login_shell; expected fish" ;;
+  esac
+}
+
 check_symlinks() {
   section "Symlinks"
 
@@ -103,6 +129,15 @@ check_symlinks() {
 
   for dir in "${config_dirs[@]}"; do
     check_link "$ROOT/.config/$dir" "$HOME/.config/$dir"
+  done
+
+  local config_files=(
+    gh/config.yml
+    git/ignore
+  )
+
+  for file in "${config_files[@]}"; do
+    check_link "$ROOT/.config/$file" "$HOME/.config/$file"
   done
 
   check_link "$ROOT/.zshrc" "$HOME/.zshrc"
@@ -196,6 +231,21 @@ check_tmux_live() {
     warn "tmux server not running or key table unavailable"
   fi
 
+  local default_shell default_command
+  default_shell="$(tmux show-options -gv default-shell 2>/dev/null || true)"
+  case "${default_shell##*/}" in
+    fish) pass "tmux default-shell $default_shell" ;;
+    "") warn "tmux default-shell unavailable" ;;
+    *) warn "tmux default-shell $default_shell; expected fish" ;;
+  esac
+
+  default_command="$(tmux show-options -gv default-command 2>/dev/null || true)"
+  if [ -z "$default_command" ] || [ "$default_command" = "exec fish" ]; then
+    pass "tmux default-command ${default_command:-empty}"
+  else
+    warn "tmux default-command $default_command; expected empty or exec fish"
+  fi
+
   if [ -x "$ROOT/.config/tmux/scripts/tmux-new-session.sh" ]; then
     pass "tmux-new-session.sh executable"
   else
@@ -210,6 +260,7 @@ main() {
   dim "os:   $OS"
 
   check_required_commands
+  check_primary_shell
   check_symlinks
   check_shell_scripts
   check_brewfile

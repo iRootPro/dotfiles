@@ -14,9 +14,9 @@ export PATH
 
 normalize_shell() {
   local preferred resolved
-  preferred="${TMUX_OPENCODE_SHELL:-$(tmux show-options -gv default-shell 2>/dev/null || true)}"
+  preferred="${TMUX_OPENCODE_SHELL:-}"
 
-  for candidate in "$preferred" "${SHELL:-}" /bin/zsh /bin/bash; do
+  for candidate in "$preferred" fish "$(tmux show-options -gv default-shell 2>/dev/null || true)" "${SHELL:-}" /bin/zsh /bin/bash; do
     [ -n "$candidate" ] || continue
     if [ -x "$candidate" ]; then
       printf '%s\n' "$candidate"

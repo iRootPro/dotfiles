@@ -176,7 +176,7 @@ keymap("n", "<leader>ld", vim.diagnostic.open_float, { desc = "Show diagnostic" 
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Quickfix diagnostics" })
 
 -- Документация (dotfiles docs через Snacks.win)
-local dotfiles = vim.fn.expand("~/Downloads/dotfiles")
+local dotfiles = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
 local function open_doc(file, title)
 	Snacks.win({
 		file = dotfiles .. "/" .. file,

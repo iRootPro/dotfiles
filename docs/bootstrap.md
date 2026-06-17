@@ -61,5 +61,6 @@ cleanup suggestions.
 
 - Repo lives at `~/dotfiles` on new machines.
 - App configs are linked per directory into `~/.config`.
+- Fish is the primary login/terminal/tmux shell; Bash is used for scripts.
 - Home files like `.zshrc`, `.tmux.conf`, `.skhdrc`, `.yabairc` are symlinked.
 - Personal identity and secrets are restored manually or from a password manager.

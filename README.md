@@ -49,6 +49,9 @@ cd ~/dotfiles
 ./doctor.sh
 ```
 
+Основной interactive shell — `fish`: его запускают Kitty, Alacritty и tmux.
+`bash` используется для скриптов, `.zshrc` оставлен как fallback.
+
 ## Структура
 
 ```

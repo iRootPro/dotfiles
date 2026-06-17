@@ -5,7 +5,7 @@ preview_command = "eza --all --git --icons --color=always {}"
 
 [[session]]
 name = "dotfiles"
-path = "~/Downloads/dotfiles"
+path = "~/dotfiles"
 preview_command = "eza --all --git --icons --color=always {}"
 
 [[session]]

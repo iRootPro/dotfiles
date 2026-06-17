@@ -154,6 +154,16 @@ link_configs() {
     link "$DOTFILES/.config/$dir" "$HOME/.config/$dir"
   done
 
+  local config_files=(
+    gh/config.yml
+    git/ignore
+  )
+
+  for file in "${config_files[@]}"; do
+    [ -e "$DOTFILES/.config/$file" ] || continue
+    link "$DOTFILES/.config/$file" "$HOME/.config/$file"
+  done
+
   # Файлы в домашней директории
   link "$DOTFILES/.zshrc" "$HOME/.zshrc"
   link "$DOTFILES/.tmux.conf" "$HOME/.tmux.conf"
