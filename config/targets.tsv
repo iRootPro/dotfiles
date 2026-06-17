@@ -3,6 +3,7 @@ alacritty	file	.config/alacritty/shared.toml	Shared Alacritty settings and keybi
 apps	file	config/apps.tsv	Curated apps and CLI inventory
 brewfile	file	Brewfile	Homebrew packages, casks, and fonts
 cleanup	file	cleanup.sh	Audit-only cleanup script
+command-palette	doc	docs/command-palette.md	Tmux command palette runbook
 commands	doc	docs/commands.md	Generated dotfiles command reference
 doctor	file	doctor.sh	Dotfiles health checks
 fish	file	.config/fish/config.fish	Primary fish shell config

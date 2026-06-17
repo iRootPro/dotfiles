@@ -164,6 +164,7 @@ git diff --cached --check
 - [Zsh](zsh.md) — промпт, плагины, алиасы, CLI-утилиты
 - [Kitty](kitty.md) — хоткеи, настройки терминала
 - [Pi](pi.md) — Pi coding agent setup, skills/extensions, restore flow
+- [Command palette](docs/command-palette.md)
 - [Actions catalog](docs/actions.md)
 - [Apps catalog](docs/apps.md)
 - [Open targets](docs/open.md)

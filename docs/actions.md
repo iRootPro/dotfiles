@@ -2,6 +2,8 @@
 
 `dotfiles actions` is the source of truth for command palette entries. It
 combines base tmux actions, safe dotfiles commands, and `dotfiles open` targets.
+For interactive usage and troubleshooting, see
+[command-palette.md](command-palette.md).
 
 Useful commands:
 
