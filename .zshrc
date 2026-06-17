@@ -17,6 +17,10 @@ setopt HIST_FIND_NO_DUPS
 # ========== EDITOR ==========
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
+export BAT_CONFIG_PATH="$HOME/.config/bat/config"
+export BUN_INSTALL="$HOME/.bun"
+export FZF_DEFAULT_OPTS="--height 40% --reverse --border"
+export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
 
 # ========== DOTFILES ==========
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
@@ -35,7 +39,7 @@ export GOPATH="$HOME/go"
 typeset -U path PATH
 path=(
   "$HOME/.opencode/bin"
-  "$HOME/.bun/bin"
+  "$BUN_INSTALL/bin"
   "$HOME/.local/bin"
   "/usr/local/go/bin"
   "$GOPATH/bin"
@@ -45,10 +49,15 @@ export PATH
 
 # ========== ALIAS ==========
 alias nv='nvim'
+alias lv='NVIM_APPNAME=lazynvim nvim'
 alias lg='lazygit'
 alias t='sesh connect'
 alias dotup="$DOTFILES_DIR/update.sh"
 alias dotclean="$DOTFILES_DIR/cleanup.sh"
+alias cat='bat'
+alias ls='eza --icons'
+alias ll='eza --icons -la'
+alias lt='eza --icons --tree --level=2'
 
 if (( $+commands[opencode] )); then
   function opencode() {
@@ -72,6 +81,10 @@ fi
 
 # ========== FZF ==========
 if (( $+commands[fzf] )); then
+  if [[ -o interactive && -t 0 ]]; then
+    source <(fzf --zsh)
+  fi
+
   function fzf-history-search() {
     selected_command=$(fc -l 1 | awk '{$1=""; print substr($0,2)}' | awk '!seen[$0]++' | fzf --height 40% --reverse --prompt="History: ")
     if [[ -n "$selected_command" ]]; then
@@ -89,6 +102,11 @@ fi
 # Zoxide
 if (( $+commands[zoxide] )); then
   eval "$(zoxide init zsh)"
+fi
+
+# Direnv
+if (( $+commands[direnv] )); then
+  eval "$(direnv hook zsh)"
 fi
 
 # Pass
