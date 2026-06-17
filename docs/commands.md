@@ -11,6 +11,7 @@ dotfiles commands --markdown
 
 | Command | Binary | Summary |
 | --- | --- | --- |
+| `dotfiles actions [--json\|--markdown\|--check]` | `dotfiles-actions` | List command palette actions |
 | `dotfiles apps [--tier TIER] [--category CATEGORY] [--kind KIND] [--status STATUS] [--missing] [--json\|--markdown\|--check]` | `dotfiles-apps` | Show curated app and CLI catalog |
 | `dotfiles cleanup` | `dotfiles-cleanup` | Show audit-only cleanup suggestions |
 | `dotfiles debug [--print]` | `dotfiles-debug` | Print safe diagnostic snapshot |

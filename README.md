@@ -87,6 +87,7 @@ cd ~/dotfiles
 ```bash
 # Единый CLI для dotfiles
 dotfiles commands
+dotfiles actions
 dotfiles apps
 dotfiles open
 dotfiles status
@@ -116,6 +117,7 @@ dotfiles doctor
 dotfiles commands --json
 dotfiles commands --markdown
 dotfiles commands --check
+dotfiles actions --json
 dotfiles apps --missing
 dotfiles open fish --print
 dotfiles pi status
@@ -161,6 +163,7 @@ git diff --cached --check
 - [Zsh](zsh.md) — промпт, плагины, алиасы, CLI-утилиты
 - [Kitty](kitty.md) — хоткеи, настройки терминала
 - [Pi](pi.md) — Pi coding agent setup, skills/extensions, restore flow
+- [Actions catalog](docs/actions.md)
 - [Apps catalog](docs/apps.md)
 - [Open targets](docs/open.md)
 - [New machine bootstrap](docs/bootstrap.md)

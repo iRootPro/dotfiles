@@ -266,6 +266,12 @@ check_dotfiles_cli() {
     fail "dotfiles open --check"
   fi
 
+  if "$ROOT/bin/dotfiles" actions --check >/dev/null 2>&1; then
+    pass "dotfiles actions --check"
+  else
+    fail "dotfiles actions --check"
+  fi
+
   local installed
   installed="$(command -v dotfiles 2>/dev/null || true)"
   if [ -n "$installed" ]; then

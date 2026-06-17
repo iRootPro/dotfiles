@@ -13,59 +13,20 @@ dotfiles_bin() {
   fi
 }
 
-list_dotfiles_commands() {
+list_dotfiles_actions() {
   local dotfiles
   dotfiles="$(dotfiles_bin)"
   [ -n "$dotfiles" ] || return 0
   command -v jq >/dev/null 2>&1 || return 0
 
-  "$dotfiles" commands --json 2>/dev/null | jq -r '
-    .commands[]
-    | select(.route != "dotfiles install")
-    | select(.route != "dotfiles pi backup")
-    | select(.route != "dotfiles pi restore")
-    | select(.route != "dotfiles tmux reload")
-    | if .route == "dotfiles apps" then
-        "dot:apps\tApps\tShow curated app and CLI catalog",
-        "dot:apps%20--missing\tMissing apps\tShow missing apps/tools",
-        "dot:apps%20--check\tApps check\tValidate app catalog"
-      else
-        "dot:" + (.route | sub("^dotfiles "; "") | gsub(" "; "%20")) + "\t" + (.route | sub("^dotfiles "; "")) + "\t" + (if .route == "dotfiles reload" then "Reload shell/tmux config" else .summary end)
-      end
-  ' 2>/dev/null || true
-}
-
-list_open_targets() {
-  local dotfiles
-  dotfiles="$(dotfiles_bin)"
-  [ -n "$dotfiles" ] || return 0
-  command -v jq >/dev/null 2>&1 || return 0
-
-  "$dotfiles" open --json 2>/dev/null | jq -r '
-    .targets[]
-    | select(.type == "file" or .type == "doc")
-    | "open:" + .id + "\tOpen " + .id + "\t" + .path + " - " + .summary
+  "$dotfiles" actions --json 2>/dev/null | jq -r '
+    .actions[]
+    | .id + "\t" + .label + "\t" + .summary
   ' 2>/dev/null || true
 }
 
 list_commands() {
-  cat <<'EOF'
-close	Close palette	Exit without running anything
-sessions	Sessions switch/create	Open sesh picker
-windows	Windows switch/close	Open tmux window picker
-new-session	New tmux session	Prompt for session name in current directory
-new-window	New tmux window	Create window in current directory
-smart-close	Smart close	Close pane, window, or session safely
-split-down	Split down	Create horizontal split below
-split-right	Split right	Create vertical split on the right
-opencode-launch	Opencode launch	Start opencode session for current directory
-opencode-list	Opencode list	Show opencode sessions
-lazygit	Git lazygit	Open lazygit in a new window
-rename-window	Rename window	Prompt for current window name
-rename-session	Rename session	Prompt for current session name
-EOF
-  list_open_targets
-  list_dotfiles_commands
+  list_dotfiles_actions
 }
 
 popup_fish() {
