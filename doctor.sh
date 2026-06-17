@@ -107,6 +107,50 @@ check_primary_shell() {
   esac
 }
 
+check_config_drift() {
+  section "Config Drift"
+
+  local old_path="Downloads/dotfiles"
+  local old_refs
+  old_refs="$(git -C "$ROOT" grep -nF "$old_path" -- ':!doctor.sh' 2>/dev/null || true)"
+  if [ -z "$old_refs" ]; then
+    pass "no tracked $old_path references"
+  else
+    fail "tracked $old_path references remain"
+    printf '%s\n' "$old_refs"
+  fi
+
+  if [ -f "$ROOT/.config/alacritty/shared.toml" ]; then
+    if grep -Eq '^[[:space:]]*program[[:space:]]*=[[:space:]]*"fish"' "$ROOT/.config/alacritty/shared.toml"; then
+      pass "Alacritty shell fish"
+    else
+      warn "Alacritty shell is not fish"
+    fi
+  fi
+
+  if [ -f "$ROOT/.config/kitty/kitty.conf" ]; then
+    if grep -Eq '^[[:space:]]*shell[[:space:]]+(.*/)?fish([[:space:]]|$)' "$ROOT/.config/kitty/kitty.conf"; then
+      pass "Kitty shell fish"
+    else
+      warn "Kitty shell is not fish"
+    fi
+  fi
+
+  if [ -f "$ROOT/.config/tmux/tmux.conf" ]; then
+    if grep -Eq '^[[:space:]]*set -g renumber-windows on' "$ROOT/.config/tmux/tmux.conf"; then
+      pass "tmux renumber-windows on"
+    else
+      warn "tmux renumber-windows is not on"
+    fi
+
+    if grep -Eq 'default-shell.*fish|command -v fish' "$ROOT/.config/tmux/tmux.conf"; then
+      pass "tmux config prefers fish"
+    else
+      warn "tmux config does not prefer fish"
+    fi
+  fi
+}
+
 check_symlinks() {
   section "Symlinks"
 
@@ -261,6 +305,7 @@ main() {
 
   check_required_commands
   check_primary_shell
+  check_config_drift
   check_symlinks
   check_shell_scripts
   check_brewfile

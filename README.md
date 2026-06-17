@@ -93,7 +93,7 @@ cd ~/dotfiles
 # Проверить что можно почистить (кэши, логи, Docker, Pi sessions)
 ./cleanup.sh
 
-# Проверить symlinks, команды, shell scripts и secret-like tracked paths
+# Проверить shell drift, symlinks, команды, scripts и secret-like tracked paths
 ./doctor.sh
 
 # Посмотреть/восстановить non-secret Pi config

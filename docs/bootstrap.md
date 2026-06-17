@@ -57,6 +57,9 @@ git pull
 Use `./update.sh` for plugin/tool updates and `./cleanup.sh` for audit-only
 cleanup suggestions.
 
+`./doctor.sh` should stay green after changes. It catches shell drift, stale
+old-clone path references, broken symlinks, and tracked secret-like paths.
+
 ## Expected Layout
 
 - Repo lives at `~/dotfiles` on new machines.
