@@ -50,6 +50,13 @@ alias t='sesh connect'
 alias dotup="$DOTFILES_DIR/update.sh"
 alias dotclean="$DOTFILES_DIR/cleanup.sh"
 
+if (( $+commands[opencode] )); then
+  function opencode() {
+    clear
+    command opencode "$@"
+  }
+fi
+
 if [[ -n "$IS_MAC" ]]; then
   if (( $+commands[eza] )); then
     alias lc='eza --icons -la --group-directories-first'

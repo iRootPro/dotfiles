@@ -61,3 +61,10 @@ if command -q eza
     alias ll="eza --icons -la"
     alias lt="eza --icons --tree --level=2"
 end
+
+if command -q opencode
+    function opencode --wraps opencode --description "Start opencode on a clean terminal screen"
+        clear
+        command opencode $argv
+    end
+end
