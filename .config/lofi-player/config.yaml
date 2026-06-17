@@ -1,0 +1,18 @@
+theme: tokyo-night
+volume: 60
+buffer_seconds: 30
+initial_buffer_seconds: 0
+stations:
+    - name: SomaFM Groove Salad
+      url: https://ice1.somafm.com/groovesalad-256-mp3
+    - name: SomaFM Drone Zone
+      url: https://ice1.somafm.com/dronezone-256-mp3
+    - name: SomaFM Deep Space One
+      url: https://ice1.somafm.com/deepspaceone-128-mp3
+    - name: Radio Paradise Mellow
+      url: https://stream.radioparadise.com/mellow-128
+    - name: Lofi Girl 24/7
+      url: https://www.youtube.com/watch?v=jfKfPfyJRdk
+      kind: youtube
+    - name: Costa Del Mar - Funky
+      url: https://radio4.cdm-radio.com:18008/stream-mp3-Funk
