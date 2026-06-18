@@ -1,6 +1,6 @@
 # Kitty Configuration
 
-Конфиг: `~/.config/kitty/kitty.conf` | Тема: Catppuccin Mocha (`current-theme.conf`)
+Конфиг: `~/.config/kitty/kitty.conf` | Тема: `dotfiles theme`
 
 Kitty используется как быстрый терминал, а окна/сессии управляются через tmux. Большинство `Cmd`-хоткеев отправляют tmux prefix (`Ctrl+B`) и команду.
 
@@ -76,11 +76,12 @@ Command palette: `Enter` запускает выбранное действие,
 
 ## Тема
 
-Catppuccin Mocha подключается через `current-theme.conf`. Это же семейство используется в tmux, starship и Neovim.
+Kitty загружает базовый `current-theme.conf`, а поверх него runtime-тему из `~/.local/state/dotfiles/theme/kitty.conf`, которую генерирует `dotfiles theme`.
 
 Сменить тему:
-```
-include current-theme.conf
+```bash
+dotfiles theme list
+dotfiles theme set kanagawa
 ```
 
 ## Remote control

@@ -23,5 +23,6 @@ dotfiles commands --markdown
 | `dotfiles pi status` | `dotfiles-pi-status` | Show non-secret Pi config status |
 | `dotfiles reload` | `dotfiles-reload` | Reload fish and tmux config when available |
 | `dotfiles status` | `dotfiles-status` | Show repo status and recent commits |
+| `dotfiles theme [list\|current\|apply-open\|set THEME]` | `dotfiles-theme` | Switch terminal/editor theme |
 | `dotfiles tmux reload` | `dotfiles-tmux-reload` | Reload tmux config |
 | `dotfiles update [plugins\|packages\|nvim\|tmux\|go\|all]` | `dotfiles-update` | Update plugins, tools, or packages |

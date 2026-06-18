@@ -1,6 +1,16 @@
 # Dotfiles
 
-Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Fish. Основная тема: Catppuccin Mocha.
+Мои конфигурационные файлы для macOS и Linux. Основной стек: Neovim 0.12 + Tmux + Kitty + Starship + Fish. Темы переключаются через `dotfiles theme`.
+
+```bash
+dotfiles theme list
+dotfiles theme set kanagawa --apply-open
+dotfiles theme set catppuccin-latte --apply-open
+```
+
+`opencode` получает generated `tui.json`, custom theme `dotfiles-*` и
+синхронизированный TUI state для следующих запусков; уже открытые
+opencode-сессии нужно перезапустить.
 
 ## Что включено
 
@@ -10,7 +20,7 @@
 | **Tmux** | `.config/tmux/tmux.conf` | Сессии, сплиты, TPM-плагины |
 | **Kitty** | `.config/kitty/` | Терминал с GPU-ускорением, Cmd-клавиши управляют tmux |
 | **Alacritty** | `.config/alacritty/` | Альтернативный терминал, модульные конфиги |
-| **Starship** | `.config/starship/` | Кросс-платформенный промпт, тема Catppuccin Mocha |
+| **Starship** | `.config/starship/` | Кросс-платформенный промпт, палитра управляется `dotfiles theme` |
 | **Fish** | `.config/fish/` | Основной шелл, starship, zoxide, fzf, direnv |
 | **Zsh** | `.zshrc` | Альтернативный шелл, zsh-syntax-highlighting |
 | **Git** | `.gitconfig.template`, `.config/git/` | Delta (side-by-side diff), глобальный gitignore |

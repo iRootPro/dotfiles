@@ -1,0 +1,494 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Switch terminal/editor theme
+# dotfiles:args=[list|current|apply-open|set THEME]
+# dotfiles:examples=dotfiles theme list | dotfiles theme current | dotfiles theme set catppuccin-mocha | dotfiles theme set gruvbox-dark --apply-open
+
+set -euo pipefail
+
+SOURCE="$(realpath "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SOURCE")/.." && pwd)"
+THEMES_FILE="$ROOT/config/themes.tsv"
+STATE_DIR="$HOME/.local/state/dotfiles/theme"
+CURRENT_FILE="$STATE_DIR/current"
+OPENCODE_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/opencode"
+OPENCODE_KV_FILE="$OPENCODE_STATE_DIR/kv.json"
+OPENCODE_THEME_DIR="$HOME/.config/opencode/themes"
+
+usage() {
+  cat <<'EOF'
+Usage: dotfiles theme [list|current|apply-open|set THEME] [--no-reload] [--apply-open]
+
+Switch coordinated themes for terminal/editor tools.
+
+Commands:
+  list              List available themes
+  current           Print current theme
+  apply-open        Best-effort apply to running terminal apps
+  set THEME         Generate runtime theme files and reload what is safe
+
+Options:
+  --no-reload       Generate files without reloading live applications
+  --apply-open      After set, also apply to running Neovim panes and report restarts
+EOF
+}
+
+ensure_state() {
+  mkdir -p "$STATE_DIR"
+}
+
+theme_background() {
+  case "$THEME_ID" in
+    *latte|*light|*dawn) printf 'light\n' ;;
+    *) printf 'dark\n' ;;
+  esac
+}
+
+load_theme() {
+  local wanted="$1"
+
+  while IFS=$'\t' read -r id label kitty_file starship_palette nvim_scheme nvim_flavour btop_theme bat_theme lofi_theme opencode_theme bg fg surface border dim accent warn success error yabai_active yabai_normal yabai_insert; do
+    [[ -z "${id:-}" || "$id" == \#* ]] && continue
+    if [ "$id" = "$wanted" ]; then
+      THEME_ID="$id"
+      THEME_LABEL="$label"
+      KITTY_FILE="$kitty_file"
+      STARSHIP_PALETTE="$starship_palette"
+      NVIM_SCHEME="$nvim_scheme"
+      NVIM_FLAVOUR="$nvim_flavour"
+      BTOP_THEME="$btop_theme"
+      BAT_THEME="$bat_theme"
+      LOFI_THEME="$lofi_theme"
+      OPENCODE_THEME="$opencode_theme"
+      BG="$bg"
+      FG="$fg"
+      SURFACE="$surface"
+      BORDER="$border"
+      DIM="$dim"
+      ACCENT="$accent"
+      WARN="$warn"
+      SUCCESS="$success"
+      ERROR="$error"
+      YABAI_ACTIVE="$yabai_active"
+      YABAI_NORMAL="$yabai_normal"
+      YABAI_INSERT="$yabai_insert"
+      return 0
+    fi
+  done <"$THEMES_FILE"
+
+  echo "Unknown theme: $wanted" >&2
+  echo "Run 'dotfiles theme list' to see available themes." >&2
+  return 1
+}
+
+list_themes() {
+  local current id label rest marker
+  current="$(current_theme 2>/dev/null || true)"
+  printf '%-20s  %s\n' 'Theme' 'Label'
+  printf '%-20s  %s\n' '-----' '-----'
+  while IFS=$'\t' read -r id label rest; do
+    [[ -z "${id:-}" || "$id" == \#* ]] && continue
+    marker=""
+    [ "$id" = "$current" ] && marker=" *"
+    printf '%-20s  %s%s\n' "$id" "$label" "$marker"
+  done <"$THEMES_FILE"
+}
+
+current_theme() {
+  if [ -f "$CURRENT_FILE" ]; then
+    sed -n '1p' "$CURRENT_FILE"
+  else
+    printf 'catppuccin-mocha\n'
+  fi
+}
+
+write_starship() {
+  local src="$ROOT/.config/starship/starship.toml" dst="$STATE_DIR/starship.toml" line
+  : >"$dst"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      'palette = '* ) printf 'palette = "%s"\n' "$STARSHIP_PALETTE" >>"$dst" ;;
+      * ) printf '%s\n' "$line" >>"$dst" ;;
+    esac
+  done <"$src"
+}
+
+write_bat() {
+  local src="$ROOT/.config/bat/config" dst="$STATE_DIR/bat.conf" line
+  : >"$dst"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      --theme=* ) printf -- '--theme="%s"\n' "$BAT_THEME" >>"$dst" ;;
+      * ) printf '%s\n' "$line" >>"$dst" ;;
+    esac
+  done <"$src"
+}
+
+write_btop() {
+  local src="$ROOT/.config/btop/btop.conf" dst="$STATE_DIR/btop.conf" line
+  : >"$dst"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      'color_theme = '* ) printf 'color_theme = "%s"\n' "$BTOP_THEME" >>"$dst" ;;
+      * ) printf '%s\n' "$line" >>"$dst" ;;
+    esac
+  done <"$src"
+}
+
+write_kitty() {
+  local src="$ROOT/.config/kitty/$KITTY_FILE"
+  if [ ! -f "$src" ]; then
+    echo "Missing Kitty theme: $src" >&2
+    return 1
+  fi
+  cp "$src" "$STATE_DIR/kitty.conf"
+}
+
+write_nvim() {
+  local nvim_background
+  nvim_background="$(theme_background)"
+
+  cat >"$STATE_DIR/nvim.lua" <<EOF
+return {
+  id = "$THEME_ID",
+  colorscheme = "$NVIM_SCHEME",
+  flavour = "$NVIM_FLAVOUR",
+  bg = "$BG",
+  fg = "$FG",
+  surface = "$SURFACE",
+  dim = "$DIM",
+  accent = "$ACCENT",
+  background = "$nvim_background",
+}
+EOF
+}
+
+write_shell_env() {
+  local fzf_colors
+  fzf_colors="bg+:$SURFACE,bg:$BG,spinner:$WARN,hl:$ACCENT,fg:$FG,header:$DIM,info:$DIM,pointer:$ACCENT,marker:$SUCCESS,fg+:$FG,prompt:$ACCENT,hl+:$ACCENT,border:$BORDER,label:$ACCENT"
+  printf '%s\n' "$fzf_colors" >"$STATE_DIR/fzf-colors"
+
+  cat >"$STATE_DIR/env.fish" <<EOF
+set -gx DOTFILES_THEME "$THEME_ID"
+set -gx DOTFILES_THEME_DIR "$STATE_DIR"
+set -gx STARSHIP_CONFIG "$STATE_DIR/starship.toml"
+set -gx BAT_CONFIG_PATH "$STATE_DIR/bat.conf"
+set -gx OPENCODE_TUI_CONFIG "$STATE_DIR/opencode-tui.json"
+set -gx DOTFILES_THEME_XDG_CONFIG_HOME "$STATE_DIR/xdg"
+set -gx FZF_DEFAULT_OPTS "--height 40% --reverse --border --color=$fzf_colors"
+EOF
+
+  cat >"$STATE_DIR/env.zsh" <<EOF
+export DOTFILES_THEME="$THEME_ID"
+export DOTFILES_THEME_DIR="$STATE_DIR"
+export STARSHIP_CONFIG="$STATE_DIR/starship.toml"
+export BAT_CONFIG_PATH="$STATE_DIR/bat.conf"
+export OPENCODE_TUI_CONFIG="$STATE_DIR/opencode-tui.json"
+export DOTFILES_THEME_XDG_CONFIG_HOME="$STATE_DIR/xdg"
+export FZF_DEFAULT_OPTS="--height 40% --reverse --border --color=$fzf_colors"
+EOF
+}
+
+write_gitmux() {
+  cat >"$STATE_DIR/gitmux.conf" <<EOF
+tmux:
+  symbols:
+    branch: ' שׂ '
+    hashprefix: ':'
+    ahead: ' '
+    behind: ' '
+    staged: '都'
+    conflict: '繁'
+    untracked: ' '
+    modified: ' '
+    stashed: ' '
+    clean: ''
+    insertions: ' '
+    deletions: ' '
+  styles:
+    state: '#[fg=$ERROR,nobold]'
+    branch: '#[fg=$FG,nobold]'
+    staged: '#[fg=$SUCCESS,nobold]'
+    conflict: '#[fg=$ERROR,nobold]'
+    modified: '#[fg=$WARN,nobold]'
+    untracked: '#[fg=$DIM,nobold]'
+    stashed: '#[fg=$DIM,nobold]'
+    clean: '#[fg=$SUCCESS,nobold]'
+    divergence: '#[fg=$ACCENT,nobold]'
+  layout: [branch, divergence, ' ', flags, ' ', stats]
+  options:
+    branch_max_len: 0
+EOF
+}
+
+write_tmux() {
+  local catppuccin_flavour="mocha"
+  [ "$(theme_background)" = "light" ] && catppuccin_flavour="latte"
+  [ "$NVIM_FLAVOUR" != "-" ] && catppuccin_flavour="$NVIM_FLAVOUR"
+
+  cat >"$STATE_DIR/tmux.conf" <<EOF
+set -g message-command-style 'bg=$SURFACE,fg=$WARN'
+set -g message-style 'bg=$SURFACE,fg=$WARN'
+set -g mode-style 'bg=$SURFACE,fg=$WARN'
+set -gq popup-style 'bg=$BG,fg=$FG'
+set -gq popup-border-style 'fg=$BORDER,bg=$BG'
+set -gq menu-style 'bg=$BG,fg=$FG'
+set -gq menu-selected-style 'bg=$ACCENT,fg=$BG,bold'
+set -g pane-active-border-style 'fg=$ACCENT,bg=default'
+set -g pane-border-style 'fg=$BORDER,bg=default'
+set -g status-style 'bg=$BG,fg=$FG'
+set -g status-left-style 'bg=$BG,fg=$FG'
+set -g status-right-style 'bg=$BG,fg=$FG'
+set -g window-status-current-style 'fg=$BG,bg=$ACCENT,bold'
+set -g window-status-style 'fg=$FG,bg=$BG'
+set -g @catppuccin_flavor '$catppuccin_flavour'
+set -g @fzf-url-fzf-options '-p 60%,30% --prompt="   " --border-label=" Open URL " --color=bg+:$SURFACE,bg:$BG,spinner:$WARN,hl:$ACCENT,fg:$FG,header:$DIM,info:$DIM,pointer:$ACCENT,marker:$SUCCESS,fg+:$FG,prompt:$ACCENT,hl+:$ACCENT,border:$BORDER,label:$ACCENT'
+
+if-shell 'command -v gitmux >/dev/null 2>&1' \\
+  "set -g status-left '#{?client_prefix,#[fg=$BG,bg=$WARN,bold] PREFIX #[default] ,}#[fg=$ACCENT,bold]#S #[fg=$BORDER]│ #[default]#[fg=$DIM]#(gitmux -timeout 200ms -cfg $STATE_DIR/gitmux.conf) '" \\
+  "set -g status-left '#{?client_prefix,#[fg=$BG,bg=$WARN,bold] PREFIX #[default] ,}#[fg=$ACCENT,bold]#S #[fg=$BORDER]│ #[default]'"
+
+set -g window-status-current-format '#[fg=$BG,bg=$ACCENT,bold] #I #[fg=$BG,bg=$ACCENT]#{?#{automatic-rename},#{?#{&&:#{==:#{pane_current_command},node},#{&&:#{!=:#{pane_title},#{host}},#{!=:#{pane_title},#{host_short}}}},#{pane_title},#W},#W} #[default]'
+set -g window-status-format '#[fg=$DIM] #I #[fg=$FG]#{?#{automatic-rename},#{?#{&&:#{==:#{pane_current_command},node},#{&&:#{!=:#{pane_title},#{host}},#{!=:#{pane_title},#{host_short}}}},#{pane_title},#W},#W} #[default]'
+set -g status-right ''
+EOF
+}
+
+write_yabai() {
+  cat >"$STATE_DIR/yabai.sh" <<EOF
+#!/usr/bin/env sh
+yabai -m config active_window_border_color $YABAI_ACTIVE
+yabai -m config normal_window_border_color $YABAI_NORMAL
+yabai -m config insert_feedback_color $YABAI_INSERT
+EOF
+  chmod +x "$STATE_DIR/yabai.sh"
+}
+
+write_lofi() {
+  local src="$ROOT/.config/lofi-player/config.yaml" dst_dir="$STATE_DIR/xdg/lofi-player" dst="$STATE_DIR/xdg/lofi-player/config.yaml" line
+  mkdir -p "$dst_dir"
+  : >"$dst"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      theme:* ) printf 'theme: %s\n' "$LOFI_THEME" >>"$dst" ;;
+      * ) printf '%s\n' "$line" >>"$dst" ;;
+    esac
+  done <"$src"
+
+  cat >"$STATE_DIR/lofi-player.yaml" <<EOF
+theme: $LOFI_THEME
+EOF
+}
+
+write_opencode() {
+  cat >"$STATE_DIR/opencode-tui.json" <<EOF
+{
+  "\$schema": "https://opencode.ai/tui.json",
+  "theme": "$OPENCODE_THEME"
+}
+EOF
+}
+
+write_opencode_theme() {
+  mkdir -p "$OPENCODE_THEME_DIR"
+  cat >"$OPENCODE_THEME_DIR/$OPENCODE_THEME.json" <<EOF
+{
+  "\$schema": "https://opencode.ai/theme.json",
+  "theme": {
+    "primary": "$ACCENT",
+    "secondary": "$DIM",
+    "accent": "$ACCENT",
+    "error": "$ERROR",
+    "warning": "$WARN",
+    "success": "$SUCCESS",
+    "info": "$ACCENT",
+    "text": "$FG",
+    "textMuted": "$DIM",
+    "background": "$BG",
+    "backgroundPanel": "$SURFACE",
+    "backgroundElement": "$SURFACE",
+    "border": "$BORDER",
+    "borderActive": "$ACCENT",
+    "borderSubtle": "$BORDER",
+    "diffAdded": "$SUCCESS",
+    "diffRemoved": "$ERROR",
+    "diffContext": "$DIM",
+    "diffHunkHeader": "$ACCENT",
+    "diffHighlightAdded": "$SUCCESS",
+    "diffHighlightRemoved": "$ERROR",
+    "diffAddedBg": "$SURFACE",
+    "diffRemovedBg": "$SURFACE",
+    "diffContextBg": "$BG",
+    "diffLineNumber": "$DIM",
+    "diffAddedLineNumberBg": "$SURFACE",
+    "diffRemovedLineNumberBg": "$SURFACE",
+    "markdownText": "$FG",
+    "markdownHeading": "$ACCENT",
+    "markdownLink": "$ACCENT",
+    "markdownLinkText": "$ACCENT",
+    "markdownCode": "$SUCCESS",
+    "markdownBlockQuote": "$DIM",
+    "markdownEmph": "$WARN",
+    "markdownStrong": "$ACCENT",
+    "markdownHorizontalRule": "$BORDER",
+    "markdownListItem": "$ACCENT",
+    "markdownListEnumeration": "$ACCENT",
+    "markdownImage": "$ACCENT",
+    "markdownImageText": "$ACCENT",
+    "markdownCodeBlock": "$FG",
+    "syntaxComment": "$DIM",
+    "syntaxKeyword": "$ACCENT",
+    "syntaxFunction": "$ACCENT",
+    "syntaxVariable": "$FG",
+    "syntaxString": "$SUCCESS",
+    "syntaxNumber": "$WARN",
+    "syntaxType": "$ACCENT",
+    "syntaxOperator": "$ACCENT",
+    "syntaxPunctuation": "$FG"
+  }
+}
+EOF
+}
+
+sync_opencode_state() {
+  local tmp
+
+  command -v jq >/dev/null 2>&1 || return 0
+  mkdir -p "$OPENCODE_STATE_DIR" || return 0
+  tmp="$(mktemp "$OPENCODE_KV_FILE.tmp.XXXXXX")" || return 0
+
+  if [ -s "$OPENCODE_KV_FILE" ]; then
+    if ! jq --arg theme "$OPENCODE_THEME" '.theme = $theme' "$OPENCODE_KV_FILE" >"$tmp" 2>/dev/null; then
+      rm -f "$tmp"
+      return 0
+    fi
+  else
+    jq -n --arg theme "$OPENCODE_THEME" '{theme: $theme}' >"$tmp" || {
+      rm -f "$tmp"
+      return 0
+    }
+  fi
+
+  mv "$tmp" "$OPENCODE_KV_FILE"
+}
+
+generate_theme() {
+  ensure_state
+  printf '%s\n' "$THEME_ID" >"$CURRENT_FILE"
+  write_kitty
+  write_starship
+  write_bat
+  write_btop
+  write_nvim
+  write_shell_env
+  write_gitmux
+  write_tmux
+  write_yabai
+  write_lofi
+  write_opencode
+  write_opencode_theme
+  sync_opencode_state
+}
+
+reload_live() {
+  if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
+    tmux source-file "$HOME/.config/tmux/tmux.conf" >/dev/null 2>&1 || true
+    [ -f "$STATE_DIR/tmux.conf" ] && tmux source-file "$STATE_DIR/tmux.conf" >/dev/null 2>&1 || true
+    tmux run-shell -b "sleep 0.4; [ -f '$STATE_DIR/tmux.conf' ] && tmux source-file '$STATE_DIR/tmux.conf'" >/dev/null 2>&1 || true
+    tmux display-message "dotfiles theme: $THEME_ID" >/dev/null 2>&1 || true
+  fi
+
+  if command -v kitty >/dev/null 2>&1; then
+    if [ -n "${KITTY_LISTEN_ON:-}" ]; then
+      kitty @ --to "$KITTY_LISTEN_ON" set-colors --all "$STATE_DIR/kitty.conf" >/dev/null 2>&1 || true
+    else
+      kitty @ set-colors --all "$STATE_DIR/kitty.conf" >/dev/null 2>&1 || true
+    fi
+  fi
+
+  if command -v yabai >/dev/null 2>&1; then
+    "$STATE_DIR/yabai.sh" >/dev/null 2>&1 || true
+  fi
+}
+
+apply_open() {
+  local theme_id="${1:-}" nvim_count=0 restart_rows="" pane command_name path title
+  [ -n "$theme_id" ] || theme_id="$(current_theme)"
+
+  load_theme "$theme_id"
+  generate_theme
+  reload_live
+
+  if command -v tmux >/dev/null 2>&1; then
+    while IFS='|' read -r pane command_name path title; do
+      [ -n "${pane:-}" ] || continue
+      case "$command_name" in
+        nvim|vim)
+          tmux send-keys -t "$pane" Escape ':silent! source ~/.config/nvim/init.lua' Enter >/dev/null 2>&1 || true
+          nvim_count=$((nvim_count + 1))
+          ;;
+        opencode|lofi-player|btop)
+          restart_rows+="$(printf '%-10s %-12s %s' "$pane" "$command_name" "${path/#$HOME/~}")"$'\n'
+          ;;
+      esac
+    done < <(tmux list-panes -a -F '#{pane_id}|#{pane_current_command}|#{pane_current_path}|#{pane_title}' 2>/dev/null || true)
+  fi
+
+  echo "Applied live theme: $THEME_ID ($THEME_LABEL)"
+  echo "Reloaded: kitty, tmux, yabai when available"
+  if [ "$nvim_count" -gt 0 ]; then
+    echo "Neovim panes sourced: $nvim_count"
+  fi
+  if [ -n "$restart_rows" ]; then
+    echo "Restart needed for these running TUI panes:"
+    printf '%-10s %-12s %s\n' 'Pane' 'Command' 'Path'
+    printf '%s' "$restart_rows"
+  fi
+}
+
+set_theme() {
+  local theme="$1" reload="$2" apply_open_after="$3"
+  load_theme "$theme"
+  generate_theme
+  if [ "$apply_open_after" = "true" ]; then
+    apply_open "$THEME_ID"
+  elif [ "$reload" = "true" ]; then
+    reload_live
+  fi
+  echo "Theme set: $THEME_ID ($THEME_LABEL)"
+  echo "Generated: $STATE_DIR"
+  echo "Restart shell apps or run 'dotfiles reload' for updated shell env. Use 'dotfiles theme apply-open' for best-effort running app updates."
+}
+
+main() {
+  local command="${1:-current}" theme="" reload="true" apply_open_after="false"
+
+  case "$command" in
+    -h|--help) usage; return 0 ;;
+    list) list_themes ;;
+    current) current_theme ;;
+    apply-open) apply_open ;;
+    set)
+      shift
+      if [ "$#" -eq 0 ]; then
+        echo "Missing theme name" >&2
+        usage >&2
+        return 2
+      fi
+      theme="$1"
+      shift
+      while [ "$#" -gt 0 ]; do
+        case "$1" in
+          --no-reload) reload="false" ;;
+          --apply-open) apply_open_after="true" ;;
+          -h|--help) usage; return 0 ;;
+          *) echo "Unknown option for dotfiles theme set: $1" >&2; usage >&2; return 2 ;;
+        esac
+        shift
+      done
+      set_theme "$theme" "$reload" "$apply_open_after"
+      ;;
+    *) echo "Unknown dotfiles theme command: $command" >&2; usage >&2; return 2 ;;
+  esac
+}
+
+main "$@"

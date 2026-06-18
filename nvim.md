@@ -1,12 +1,14 @@
 # Neovim Configuration
 
-Конфиг: `~/.config/nvim/init.lua` | Тема: Catppuccin Mocha | Менеджер плагинов: vim.pack | Neovim 0.12+
+Конфиг: `~/.config/nvim/init.lua` | Тема: `dotfiles theme` | Менеджер плагинов: vim.pack | Neovim 0.12+
 
 ## Плагины
 
 | Плагин | Назначение |
 |--------|-----------|
 | catppuccin/nvim | Цветовая схема |
+| gruvbox.nvim | Цветовая схема Gruvbox |
+| kanagawa.nvim | Цветовая схема Kanagawa |
 | nvim-treesitter | Установка и управление парсерами |
 | snacks.nvim | Picker (файлы, grep, буферы), Explorer (дерево файлов) |
 | blink.cmp | Автодополнение (Enter для выбора) |

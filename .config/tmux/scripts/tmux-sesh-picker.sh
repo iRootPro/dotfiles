@@ -7,6 +7,7 @@ list_tmux='sesh list -i -t'
 list_config='sesh list -i -d -c'
 list_zoxide='sesh list -i -d -z'
 fzf_colors='bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#89b4fa,fg:#cdd6f4,header:#6c7086,info:#6c7086,pointer:#cba6f7,marker:#a6e3a1,fg+:#cdd6f4,prompt:#89b4fa,hl+:#cba6f7,border:#45475a,label:#cba6f7'
+[ -f "${DOTFILES_THEME_DIR:-$HOME/.local/state/dotfiles/theme}/fzf-colors" ] && fzf_colors="$(cat "${DOTFILES_THEME_DIR:-$HOME/.local/state/dotfiles/theme}/fzf-colors")"
 
 strip_ansi() {
   perl -pe 's/\e\[[0-9;?]*[ -\/]*[@-~]//g'

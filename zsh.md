@@ -7,7 +7,7 @@ Fallback-конфиг: `~/.zshrc` | Промпт: `~/.config/starship/starship.t
 ```
 ~/.zprofile          # brew shellenv (загружается при логине)
 ~/.zshrc             # fallback-конфиг, если запускается zsh
-~/.config/starship/  # настройки промпта (тема Catppuccin Mocha)
+~/.config/starship/  # настройки промпта, палитра из dotfiles theme
 ```
 
 ## Плагины
@@ -107,7 +107,14 @@ export API_KEY="dev-key-123"
 
 ## Промпт: Starship
 
-Конфиг: `~/.config/starship/starship.toml`, тема `Catppuccin Mocha`.
+Конфиг: `~/.config/starship/starship.toml`; если есть generated-файл, Zsh использует `~/.local/state/dotfiles/theme/starship.toml`.
+
+Сменить тему:
+
+```bash
+dotfiles theme list
+dotfiles theme set gruvbox-dark
+```
 
 Показывает:
 - Текущую директорию

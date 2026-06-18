@@ -5,6 +5,7 @@ self="$0"
 mode="${1:-pick}"
 status_script="${TMUX_PI_STATUS_SCRIPT:-$HOME/.config/tmux/scripts/tmux-pi-status.sh}"
 fzf_colors='bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#89b4fa,fg:#cdd6f4,header:#6c7086,info:#6c7086,pointer:#cba6f7,marker:#a6e3a1,fg+:#cdd6f4,prompt:#89b4fa,hl+:#cba6f7,border:#45475a,label:#cba6f7'
+[ -f "${DOTFILES_THEME_DIR:-$HOME/.local/state/dotfiles/theme}/fzf-colors" ] && fzf_colors="$(cat "${DOTFILES_THEME_DIR:-$HOME/.local/state/dotfiles/theme}/fzf-colors")"
 
 die_pause() {
   printf '\n%s Press Enter...' "$1"

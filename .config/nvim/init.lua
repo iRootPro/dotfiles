@@ -118,6 +118,9 @@ opt.signcolumn = "yes" -- Всегда показывать колонку зн�
 -------------------------
 vim.pack.add({
 	{ src = "https://github.com/catppuccin/nvim", name = "catppuccin" }, -- Colorscheme
+	{ src = "https://github.com/ellisonleao/gruvbox.nvim" },
+	{ src = "https://github.com/rebelot/kanagawa.nvim" },
+	{ src = "https://github.com/maxmx03/solarized.nvim" },
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
 	{ src = "https://github.com/folke/snacks.nvim" },
 	{ src = "https://github.com/nvim-lua/plenary.nvim" },
@@ -698,20 +701,59 @@ require("which-key").add({
 ------------------------------
 -------- Color scheme --------
 ------------------------------
-require("catppuccin").setup({
+local theme = {
+	id = "catppuccin-mocha",
+	colorscheme = "catppuccin-mocha",
 	flavour = "mocha",
-	integrations = {
-		gitsigns = true,
-		treesitter = true,
-		which_key = true,
-	},
-	custom_highlights = function(colors)
-		return {
-			NormalFloat = { bg = colors.mantle },
-		}
-	end,
-})
-vim.cmd.colorscheme("catppuccin-mocha")
+	bg = "#1e1e2e",
+	fg = "#cdd6f4",
+	surface = "#313244",
+	dim = "#6c7086",
+	accent = "#cba6f7",
+	background = "dark",
+}
+local theme_file = vim.fn.expand("~/.local/state/dotfiles/theme/nvim.lua")
+if vim.fn.filereadable(theme_file) == 1 then
+	local ok, loaded = pcall(dofile, theme_file)
+	if ok and type(loaded) == "table" then
+		theme = vim.tbl_extend("force", theme, loaded)
+	end
+end
+
+vim.o.background = theme.background or "dark"
+
+if theme.colorscheme:match("^catppuccin") then
+	require("catppuccin").setup({
+		flavour = theme.flavour ~= "-" and theme.flavour or "mocha",
+		integrations = {
+			gitsigns = true,
+			treesitter = true,
+			which_key = true,
+		},
+		custom_highlights = function(colors)
+			return {
+				NormalFloat = { bg = colors.mantle },
+			}
+		end,
+	})
+elseif theme.colorscheme == "gruvbox" then
+	pcall(function()
+		require("gruvbox").setup({ contrast = theme.background == "light" and "soft" or "hard" })
+	end)
+elseif theme.colorscheme == "kanagawa" then
+	pcall(function()
+		require("kanagawa").setup({ theme = "wave" })
+	end)
+elseif theme.colorscheme == "solarized" then
+	pcall(function()
+		require("solarized").setup({})
+	end)
+end
+
+local ok_theme = pcall(vim.cmd.colorscheme, theme.colorscheme)
+if not ok_theme then
+	vim.cmd.colorscheme("catppuccin-mocha")
+end
 
 -------------------------------
 -------- AUTO COMMANDS --------
@@ -728,9 +770,9 @@ vim.api.nvim_create_autocmd("VimEnter", {
 
 -- Установить для LineNr и SignColumn тот же фон что у Normal
 -- Почти одинаковый фон с легким отличием
-vim.api.nvim_set_hl(0, "LineNr", { bg = "#1e1e2e", fg = "#6c7086" })
-vim.api.nvim_set_hl(0, "SignColumn", { bg = "#1e1e2e", fg = "#cba6f7" })
-vim.api.nvim_set_hl(0, "CursorLineNr", { bg = "#313244", fg = "#cdd6f4" }) -- легкое выделение
+vim.api.nvim_set_hl(0, "LineNr", { bg = theme.bg, fg = theme.dim })
+vim.api.nvim_set_hl(0, "SignColumn", { bg = theme.bg, fg = theme.accent })
+vim.api.nvim_set_hl(0, "CursorLineNr", { bg = theme.surface, fg = theme.fg }) -- легкое выделение
 
 -- Сначала объявим функции
 local function git_branch()
@@ -845,5 +887,5 @@ vim.opt.statusline = ""
 	.. " %{v:lua.filetype_info()} "
 	.. "%#StatusLineNC#" -- разделитель
 -- Цвета
-vim.api.nvim_set_hl(0, "StatusLine", { bg = "#1e1e2e", fg = "#cdd6f4" })
-vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "#1e1e2e", fg = "#6c7086" })
+vim.api.nvim_set_hl(0, "StatusLine", { bg = theme.bg, fg = theme.fg })
+vim.api.nvim_set_hl(0, "StatusLineNC", { bg = theme.bg, fg = theme.dim })

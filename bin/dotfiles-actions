@@ -84,6 +84,16 @@ dot_records() {
         "dot:update%20tmux" + $sep + "dotfiles" + $sep + "Update tmux" + $sep + "Update tmux plugins",
         "dot:update%20go" + $sep + "dotfiles" + $sep + "Update Go tools" + $sep + "Update Go-based tools",
         "dot:update%20all" + $sep + "dotfiles" + $sep + "Update all" + $sep + "Run all update modes"
+      elif .route == "dotfiles theme" then
+        "dot:theme" + $sep + "dotfiles" + $sep + "Theme current" + $sep + "Show current coordinated theme",
+        "dot:theme%20list" + $sep + "dotfiles" + $sep + "Theme list" + $sep + "List coordinated themes",
+        "dot:theme%20apply-open" + $sep + "dotfiles" + $sep + "Theme apply open" + $sep + "Best-effort apply theme to running terminal apps",
+        "dot:theme%20set%20catppuccin-mocha" + $sep + "dotfiles" + $sep + "Theme Catppuccin" + $sep + "Switch to Catppuccin Mocha",
+        "dot:theme%20set%20catppuccin-latte" + $sep + "dotfiles" + $sep + "Theme Latte" + $sep + "Switch to Catppuccin Latte",
+        "dot:theme%20set%20gruvbox-dark" + $sep + "dotfiles" + $sep + "Theme Gruvbox" + $sep + "Switch to Gruvbox Dark",
+        "dot:theme%20set%20gruvbox-light" + $sep + "dotfiles" + $sep + "Theme Gruvbox Light" + $sep + "Switch to Gruvbox Light",
+        "dot:theme%20set%20solarized-light" + $sep + "dotfiles" + $sep + "Theme Solarized" + $sep + "Switch to Solarized Light",
+        "dot:theme%20set%20kanagawa" + $sep + "dotfiles" + $sep + "Theme Kanagawa" + $sep + "Switch to Kanagawa"
       else
         (.route | sub("^dotfiles "; "")) as $short
         | "dot:" + ($short | gsub(" "; "%20")) + $sep + "dotfiles" + $sep + $short + $sep + (if .route == "dotfiles reload" then "Reload shell/tmux config" else .summary end)

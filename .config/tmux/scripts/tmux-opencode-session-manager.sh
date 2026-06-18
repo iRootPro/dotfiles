@@ -8,6 +8,13 @@ command="${TMUX_OPENCODE_COMMAND:-opencode}"
 popup_width="${TMUX_OPENCODE_POPUP_WIDTH:-90%}"
 popup_height="${TMUX_OPENCODE_POPUP_HEIGHT:-90%}"
 fzf_colors='bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#89b4fa,fg:#cdd6f4,header:#6c7086,info:#6c7086,pointer:#cba6f7,marker:#a6e3a1,fg+:#cdd6f4,prompt:#89b4fa,hl+:#cba6f7,border:#45475a,label:#cba6f7'
+theme_dir="${DOTFILES_THEME_DIR:-$HOME/.local/state/dotfiles/theme}"
+[ -f "$theme_dir/fzf-colors" ] && fzf_colors="$(cat "$theme_dir/fzf-colors")"
+
+if [ -f "$theme_dir/opencode-tui.json" ]; then
+  OPENCODE_TUI_CONFIG="$theme_dir/opencode-tui.json"
+  export OPENCODE_TUI_CONFIG
+fi
 
 PATH="/opt/homebrew/bin:/usr/local/bin:${HOME:-}/.local/bin:${HOME:-}/.opencode/bin:${PATH:-}"
 export PATH
@@ -189,7 +196,7 @@ launch_session() {
   fi
 
   if ! tmux has-session -t "=$session" 2>/dev/null; then
-    tmux new-session -d -s "$session" -c "$path" "clear; exec \"$command\""
+    tmux new-session -d -s "$session" -c "$path" -e "OPENCODE_TUI_CONFIG=${OPENCODE_TUI_CONFIG:-}" "clear; exec \"$command\""
     tmux set-option -t "$session" @opencode_state unknown >/dev/null
   fi
 

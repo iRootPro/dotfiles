@@ -21,3 +21,12 @@ execution. Labels and summaries should be adjusted in `dotfiles-actions`,
 Action IDs with spaces in arguments use `%20`, for example
 `dot:update%20packages`. `open:*` actions are generated from file/doc targets in
 `config/targets.tsv`.
+
+Theme actions are generated from `dotfiles theme` metadata plus the curated themes
+in `config/themes.tsv`, for example `dot:theme%20set%20kanagawa`. Use
+`dot:theme%20apply-open` for best-effort hot application to running terminal
+apps; long-running TUI apps may still need restart. Light themes such as
+`catppuccin-latte`, `gruvbox-light`, and `solarized-light` are available from
+the same palette. `opencode` gets generated `tui.json` and synced TUI state for
+new starts, backed by generated custom `dotfiles-*` themes; already running
+opencode sessions still need restart.

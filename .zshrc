@@ -18,9 +18,11 @@ setopt HIST_FIND_NO_DUPS
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
 export BAT_CONFIG_PATH="$HOME/.config/bat/config"
+export DOTFILES_THEME_DIR="$HOME/.local/state/dotfiles/theme"
 export BUN_INSTALL="$HOME/.bun"
 export FZF_DEFAULT_OPTS="--height 40% --reverse --border"
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
+[ -f "$DOTFILES_THEME_DIR/env.zsh" ] && source "$DOTFILES_THEME_DIR/env.zsh"
 
 # ========== DOTFILES ==========
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
@@ -62,7 +64,31 @@ alias lt='eza --icons --tree --level=2'
 if (( $+commands[opencode] )); then
   function opencode() {
     clear
-    command opencode "$@"
+    if [[ -f "$DOTFILES_THEME_DIR/opencode-tui.json" ]]; then
+      OPENCODE_TUI_CONFIG="$DOTFILES_THEME_DIR/opencode-tui.json" command opencode "$@"
+    else
+      command opencode "$@"
+    fi
+  }
+fi
+
+if (( $+commands[lofi-player] )); then
+  function lofi-player() {
+    if [[ -f "$DOTFILES_THEME_DIR/xdg/lofi-player/config.yaml" ]]; then
+      XDG_CONFIG_HOME="$DOTFILES_THEME_DIR/xdg" command lofi-player "$@"
+    else
+      command lofi-player "$@"
+    fi
+  }
+fi
+
+if (( $+commands[btop] )); then
+  function btop() {
+    if [[ -f "$DOTFILES_THEME_DIR/btop.conf" ]]; then
+      command btop --config "$DOTFILES_THEME_DIR/btop.conf" --themes-dir "$HOME/.config/btop/themes" "$@"
+    else
+      command btop "$@"
+    fi
   }
 fi
 
@@ -147,7 +173,11 @@ done
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # ========== STARSHIP ==========
-export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+if [[ -f "$DOTFILES_THEME_DIR/starship.toml" ]]; then
+  export STARSHIP_CONFIG="$DOTFILES_THEME_DIR/starship.toml"
+else
+  export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+fi
 if (( $+commands[starship] )); then
   eval "$(starship init zsh)"
 fi

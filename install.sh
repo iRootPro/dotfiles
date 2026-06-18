@@ -195,6 +195,10 @@ link_configs() {
     link "$DOTFILES/.skhdrc" "$HOME/.skhdrc"
     link "$DOTFILES/.yabairc" "$HOME/.yabairc"
   fi
+
+  if [ -x "$DOTFILES/bin/dotfiles-theme" ]; then
+    "$DOTFILES/bin/dotfiles-theme" set catppuccin-mocha --no-reload >/dev/null 2>&1 || true
+  fi
 }
 
 # --- Tmux Plugin Manager ---
