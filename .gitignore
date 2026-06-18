@@ -45,6 +45,7 @@ tmux-server-*.log
 .config/talos/
 
 # Generated/local dependency state
+graphify-out/
 .config/opencode/node_modules/
 .config/opencode/package-lock.json
 .config/opencode/bun.lock
