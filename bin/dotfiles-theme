@@ -221,9 +221,10 @@ EOF
 }
 
 write_tmux() {
-  local catppuccin_flavour="mocha"
+  local catppuccin_flavour="mocha" continuum_save
   [ "$(theme_background)" = "light" ] && catppuccin_flavour="latte"
   [ "$NVIM_FLAVOUR" != "-" ] && catppuccin_flavour="$NVIM_FLAVOUR"
+  continuum_save="#($HOME/.config/tmux/plugins/tmux-continuum/scripts/continuum_save.sh)"
 
   cat >"$STATE_DIR/tmux.conf" <<EOF
 set -g message-command-style 'bg=$SURFACE,fg=$WARN'
@@ -238,18 +239,20 @@ set -g pane-border-style 'fg=$BORDER,bg=default'
 set -g status-style 'bg=$BG,fg=$FG'
 set -g status-left-style 'bg=$BG,fg=$FG'
 set -g status-right-style 'bg=$BG,fg=$FG'
-set -g window-status-current-style 'fg=$BG,bg=$ACCENT,bold'
+set -g window-status-current-style 'fg=$ACCENT,bg=$BG,bold'
 set -g window-status-style 'fg=$FG,bg=$BG'
 set -g @catppuccin_flavor '$catppuccin_flavour'
+set -g @catppuccin_flavour '$catppuccin_flavour'
+set -g @catppuccin_status_background '$BG'
 set -g @fzf-url-fzf-options '-p 60%,30% --prompt="   " --border-label=" Open URL " --color=bg+:$SURFACE,bg:$BG,spinner:$WARN,hl:$ACCENT,fg:$FG,header:$DIM,info:$DIM,pointer:$ACCENT,marker:$SUCCESS,fg+:$FG,prompt:$ACCENT,hl+:$ACCENT,border:$BORDER,label:$ACCENT'
 
 if-shell 'command -v gitmux >/dev/null 2>&1' \\
   "set -g status-left '#{?client_prefix,#[fg=$BG,bg=$WARN,bold] PREFIX #[default] ,}#[fg=$ACCENT,bold]#S #[fg=$BORDER]│ #[default]#[fg=$DIM]#(gitmux -timeout 200ms -cfg $STATE_DIR/gitmux.conf) '" \\
   "set -g status-left '#{?client_prefix,#[fg=$BG,bg=$WARN,bold] PREFIX #[default] ,}#[fg=$ACCENT,bold]#S #[fg=$BORDER]│ #[default]'"
 
-set -g window-status-current-format '#[fg=$BG,bg=$ACCENT,bold] #I #[fg=$BG,bg=$ACCENT]#{?#{automatic-rename},#{?#{&&:#{==:#{pane_current_command},node},#{&&:#{!=:#{pane_title},#{host}},#{!=:#{pane_title},#{host_short}}}},#{pane_title},#W},#W} #[default]'
+set -g window-status-current-format '#[fg=$ACCENT,bg=$BG,bold] #I #{?#{automatic-rename},#{?#{&&:#{==:#{pane_current_command},node},#{&&:#{!=:#{pane_title},#{host}},#{!=:#{pane_title},#{host_short}}}},#{pane_title},#W},#W} #[default]'
 set -g window-status-format '#[fg=$DIM] #I #[fg=$FG]#{?#{automatic-rename},#{?#{&&:#{==:#{pane_current_command},node},#{&&:#{!=:#{pane_title},#{host}},#{!=:#{pane_title},#{host_short}}}},#{pane_title},#W},#W} #[default]'
-set -g status-right ''
+set -g status-right '$continuum_save#[fg=$DIM]theme #[fg=$ACCENT]$THEME_ID #[default]'
 EOF
 }
 
@@ -393,7 +396,9 @@ reload_live() {
   if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
     tmux source-file "$HOME/.config/tmux/tmux.conf" >/dev/null 2>&1 || true
     [ -f "$STATE_DIR/tmux.conf" ] && tmux source-file "$STATE_DIR/tmux.conf" >/dev/null 2>&1 || true
-    tmux run-shell -b "sleep 0.4; [ -f '$STATE_DIR/tmux.conf' ] && tmux source-file '$STATE_DIR/tmux.conf'" >/dev/null 2>&1 || true
+    tmux run-shell -b "sleep 0.2; [ -f '$STATE_DIR/tmux.conf' ] && tmux source-file '$STATE_DIR/tmux.conf'" >/dev/null 2>&1 || true
+    tmux run-shell -b "sleep 0.8; [ -f '$STATE_DIR/tmux.conf' ] && tmux source-file '$STATE_DIR/tmux.conf'" >/dev/null 2>&1 || true
+    tmux run-shell -b "sleep 1.6; [ -f '$STATE_DIR/tmux.conf' ] && tmux source-file '$STATE_DIR/tmux.conf'" >/dev/null 2>&1 || true
     tmux display-message "dotfiles theme: $THEME_ID" >/dev/null 2>&1 || true
   fi
 
