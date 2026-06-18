@@ -65,5 +65,5 @@ old-clone path references, broken symlinks, and tracked secret-like paths.
 - Repo lives at `~/dotfiles` on new machines.
 - App configs are linked per directory into `~/.config`.
 - Fish is the primary login/terminal/tmux shell; Bash is used for scripts.
-- Home files like `.zshrc`, `.tmux.conf`, `.skhdrc`, `.yabairc` are symlinked.
+- Home files like `.zshrc` and `.tmux.conf` are symlinked; `.skhdrc` and `.yabairc` are macOS-only.
 - Personal identity and secrets are restored manually or from a password manager.

@@ -36,6 +36,7 @@ opencode-сессии нужно перезапустить.
 - **macOS** или **Linux** (Ubuntu, Fedora, Arch)
 - **Fish** (основной шелл)
 - **Git**
+- **Neovim 0.12+** и **tmux 3.3+** для полного TUI workflow
 - [Homebrew](https://brew.sh) (macOS) или системный пакетный менеджер (Linux)
 
 ## Установка

@@ -35,6 +35,16 @@ popup_fish() {
   tmux display-popup -w 88% -h 82% -E "$(printf '%q' "$self") popup $(printf '%q' "$command")" || true
 }
 
+run_with_script() {
+  local command="$1" log="$2"
+
+  if script --version >/dev/null 2>&1; then
+    script -q -a "$log" -c "fish -lc $(printf '%q' "$command")"
+  else
+    script -q -a "$log" fish -lc "$command"
+  fi
+}
+
 safe_window_name() {
   local name="$1"
   name="${name//[^[:alnum:]_.-]/-}"
@@ -81,7 +91,7 @@ popup_command() {
   printf '$ %s\n\n' "$command" >"$log"
   set +e
   if command -v script >/dev/null 2>&1; then
-    script -q -a "$log" fish -lc "$command"
+    run_with_script "$command" "$log"
     status=$?
   else
     fish -lc "$command" 2>&1 | tee -a "$log"

@@ -19,7 +19,7 @@ Show the curated app and CLI catalog used by these dotfiles.
 Options:
   --tier TIER          Filter by tier: core, dev, optional
   --category CATEGORY  Filter by category: terminal, shell, git, editor, data, lang, tmux, font
-  --kind KIND          Filter by install kind: brew, cask
+  --kind KIND          Filter by macOS install kind: brew, cask
   --status STATUS      Filter by status: installed, missing, unknown
   --missing           Show only missing apps/tools
   --json              Emit machine-readable JSON (requires jq)
@@ -81,9 +81,9 @@ status_marker() {
 
 emit_records() {
   local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
-  local id category tier kind package command_name summary status
+  local id category tier kind package command_name apt_package dnf_package pacman_package summary status
 
-  while IFS=$'\t' read -r id category tier kind package command_name summary; do
+  while IFS=$'\t' read -r id category tier kind package command_name apt_package dnf_package pacman_package summary; do
     id="$(trim "${id:-}")"
     [ -z "$id" ] && continue
     [[ "$id" == '#'* ]] && continue
@@ -94,18 +94,18 @@ emit_records() {
     status="$(app_status "$kind" "$package" "$command_name")"
     [ -z "$status_filter" ] || [ "$status" = "$status_filter" ] || continue
 
-    printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' \
-      "$id" "$SEP" "$category" "$SEP" "$tier" "$SEP" "$kind" "$SEP" "$package" "$SEP" "$command_name" "$SEP" "$summary" "$SEP" "$status"
+    printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' \
+      "$id" "$SEP" "$category" "$SEP" "$tier" "$SEP" "$kind" "$SEP" "$package" "$SEP" "$command_name" "$SEP" "$apt_package" "$SEP" "$dnf_package" "$SEP" "$pacman_package" "$SEP" "$summary" "$SEP" "$status"
   done <"$CATALOG"
 }
 
 show_table() {
   local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
-  local id category tier kind package command_name summary status installed=0 missing=0 unknown=0 total=0
+  local id category tier kind package command_name apt_package dnf_package pacman_package summary status installed=0 missing=0 unknown=0 total=0
 
   printf '%-5s  %-24s  %-9s  %-8s  %-8s  %s\n' 'State' 'App' 'Category' 'Tier' 'Kind' 'Summary'
   printf '%-5s  %-24s  %-9s  %-8s  %-8s  %s\n' '-----' '---' '--------' '----' '----' '-------'
-  while IFS="$SEP" read -r id category tier kind package command_name summary status; do
+  while IFS="$SEP" read -r id category tier kind package command_name apt_package dnf_package pacman_package summary status; do
     [ -n "$id" ] || continue
     total=$((total + 1))
     case "$status" in
@@ -120,14 +120,14 @@ show_table() {
 
 show_markdown() {
   local tier_filter="$1" category_filter="$2" kind_filter="$3" status_filter="$4"
-  local id category tier kind package command_name summary status
+  local id category tier kind package command_name apt_package dnf_package pacman_package summary status
 
-  echo '| State | App | Category | Tier | Kind | Package | Command | Summary |'
-  echo '| --- | --- | --- | --- | --- | --- | --- | --- |'
-  while IFS="$SEP" read -r id category tier kind package command_name summary status; do
+  echo '| State | App | Category | Tier | Kind | Package | Command | Apt | Dnf | Pacman | Summary |'
+  echo '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  while IFS="$SEP" read -r id category tier kind package command_name apt_package dnf_package pacman_package summary status; do
     [ -n "$id" ] || continue
-    printf '| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | %s |\n' \
-      "$status" "$id" "$category" "$tier" "$kind" "$package" "$command_name" "${summary//|/\\|}"
+    printf '| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | %s |\n' \
+      "$status" "$id" "$category" "$tier" "$kind" "$package" "$command_name" "$apt_package" "$dnf_package" "$pacman_package" "${summary//|/\\|}"
   done < <(emit_records "$tier_filter" "$category_filter" "$kind_filter" "$status_filter")
 }
 
@@ -147,25 +147,30 @@ show_json() {
       kind: .[3],
       package: .[4],
       command: .[5],
-      summary: .[6],
-      status: .[7]
+      linux: {
+        apt: .[6],
+        dnf: .[7],
+        pacman: .[8]
+      },
+      summary: .[9],
+      status: .[10]
     }] | {ok: true, apps: .}'
 }
 
 check_catalog() {
-  local failures=0 id category tier kind package command_name summary dup brew_pattern
+  local failures=0 id category tier kind package command_name apt_package dnf_package pacman_package summary dup brew_pattern
 
   if [ ! -f "$CATALOG" ]; then
     echo "Missing catalog: ${CATALOG#$ROOT/}" >&2
     return 1
   fi
 
-  while IFS=$'\t' read -r id category tier kind package command_name summary; do
+  while IFS=$'\t' read -r id category tier kind package command_name apt_package dnf_package pacman_package summary; do
     id="$(trim "${id:-}")"
     [ -z "$id" ] && continue
     [[ "$id" == '#'* ]] && continue
 
-    for value in category tier kind package command_name summary; do
+    for value in category tier kind package command_name apt_package dnf_package pacman_package summary; do
       if [ -z "${!value:-}" ]; then
         echo "Missing $value for app: $id" >&2
         failures=$((failures + 1))

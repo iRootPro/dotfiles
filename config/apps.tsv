@@ -1,23 +1,23 @@
-# id	category	tier	kind	package	command	summary
-bat	terminal	core	brew	bat	bat	Cat with syntax highlighting
-btop	terminal	dev	brew	btop	btop	Resource monitor
-direnv	shell	dev	brew	direnv	direnv	Directory-local environment loader
-eza	terminal	core	brew	eza	eza	Modern ls replacement
-fd	terminal	core	brew	fd	fd	Fast file finder
-fish	shell	core	brew	fish	fish	Primary interactive shell
-fzf	terminal	core	brew	fzf	fzf	Fuzzy finder
-git-delta	git	dev	brew	git-delta	delta	Syntax-highlighted git diffs
-gitmux	git	dev	brew	gitmux	gitmux	Git status for tmux
-go	lang	dev	brew	go	go	Go toolchain
-jq	data	core	brew	jq	jq	JSON processor
-lazygit	git	dev	brew	lazygit	lazygit	Terminal UI for git
-neovim	editor	core	brew	neovim	nvim	Main editor
-ripgrep	terminal	core	brew	ripgrep	rg	Fast text search
-sesh	tmux	dev	brew	sesh	sesh	Tmux session picker
-starship	shell	core	brew	starship	starship	Cross-shell prompt
-tmux	terminal	core	brew	tmux	tmux	Terminal multiplexer
-zoxide	shell	core	brew	zoxide	zoxide	Smarter cd command
-zsh-autosuggestions	shell	optional	brew	zsh-autosuggestions	-	Zsh autosuggestions plugin
-zsh-syntax-highlighting	shell	optional	brew	zsh-syntax-highlighting	-	Zsh syntax highlighting plugin
-kitty	terminal	core	cask	kitty	kitty	GPU terminal emulator
-font-meslo-lg-nerd-font	font	core	cask	font-meslo-lg-nerd-font	-	Meslo Nerd Font for terminal icons
+# id	category	tier	kind	package	command	apt	dnf	pacman	summary
+bat	terminal	core	brew	bat	bat	bat	bat	bat	Cat with syntax highlighting
+btop	terminal	dev	brew	btop	btop	btop	btop	btop	Resource monitor
+direnv	shell	dev	brew	direnv	direnv	direnv	direnv	direnv	Directory-local environment loader
+eza	terminal	core	brew	eza	eza	-	eza	eza	Modern ls replacement
+fd	terminal	core	brew	fd	fd	fd-find	fd-find	fd	Fast file finder
+fish	shell	core	brew	fish	fish	fish	fish	fish	Primary interactive shell
+fzf	terminal	core	brew	fzf	fzf	fzf	fzf	fzf	Fuzzy finder
+git-delta	git	dev	brew	git-delta	delta	-	git-delta	git-delta	Syntax-highlighted git diffs
+gitmux	git	dev	brew	gitmux	gitmux	-	-	-	Git status for tmux
+go	lang	dev	brew	go	go	golang-go	golang	go	Go toolchain
+jq	data	core	brew	jq	jq	jq	jq	jq	JSON processor
+lazygit	git	dev	brew	lazygit	lazygit	-	lazygit	lazygit	Terminal UI for git
+neovim	editor	core	brew	neovim	nvim	neovim	neovim	neovim	Main editor
+ripgrep	terminal	core	brew	ripgrep	rg	ripgrep	ripgrep	ripgrep	Fast text search
+sesh	tmux	dev	brew	sesh	sesh	-	-	-	Tmux session picker
+starship	shell	core	brew	starship	starship	-	starship	starship	Cross-shell prompt
+tmux	terminal	core	brew	tmux	tmux	tmux	tmux	tmux	Terminal multiplexer
+zoxide	shell	core	brew	zoxide	zoxide	zoxide	zoxide	zoxide	Smarter cd command
+zsh-autosuggestions	shell	optional	brew	zsh-autosuggestions	-	zsh-autosuggestions	zsh-autosuggestions	zsh-autosuggestions	Zsh autosuggestions plugin
+zsh-syntax-highlighting	shell	optional	brew	zsh-syntax-highlighting	-	zsh-syntax-highlighting	zsh-syntax-highlighting	zsh-syntax-highlighting	Zsh syntax highlighting plugin
+kitty	terminal	core	cask	kitty	kitty	kitty	kitty	kitty	GPU terminal emulator
+font-meslo-lg-nerd-font	font	core	cask	font-meslo-lg-nerd-font	-	-	-	-	Meslo Nerd Font for terminal icons

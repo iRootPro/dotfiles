@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+for fish in "${TMUX_FISH:-}" "${SHELL:-}" /opt/homebrew/bin/fish /usr/local/bin/fish /usr/bin/fish /bin/fish; do
+  [ -n "$fish" ] || continue
+  [ "${fish##*/}" = "fish" ] || continue
+  if [ -x "$fish" ]; then
+    exec "$fish" "$@"
+  fi
+done
+
+if command -v fish >/dev/null 2>&1; then
+  exec fish "$@"
+fi
+
+exec /bin/sh "$@"

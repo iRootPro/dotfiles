@@ -2,7 +2,7 @@
 
 `config/apps.tsv` is the curated inventory of packages and GUI apps used by
 these dotfiles. `Brewfile` remains the macOS installer source; the catalog adds
-tiers, categories, summaries, and installed/missing status.
+tiers, categories, Linux package names, summaries, and installed/missing status.
 
 Useful commands:
 
@@ -23,5 +23,7 @@ Tiers:
 - `dev`: development tools for the main workstation workflow.
 - `optional`: extras and fallback shell integrations.
 
-When adding a Homebrew package or cask, add it to both `Brewfile` and
-`config/apps.tsv`, then run `dotfiles apps --check`.
+When adding a package or cask, add the macOS package to both `Brewfile` and
+`config/apps.tsv`. Fill the `apt`, `dnf`, and `pacman` columns with package
+names when available, or `-` when the installer uses a fallback. Then run
+`dotfiles apps --check`.

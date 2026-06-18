@@ -55,6 +55,24 @@ check_optional_command() {
   fi
 }
 
+version_at_least() {
+  local version="$1" minimum="$2"
+  local major minor patch min_major min_minor min_patch
+
+  IFS=. read -r major minor patch _ <<<"$version"
+  IFS=. read -r min_major min_minor min_patch _ <<<"$minimum"
+  major="${major//[!0-9]/}"; minor="${minor//[!0-9]/}"; patch="${patch//[!0-9]/}"
+  min_major="${min_major//[!0-9]/}"; min_minor="${min_minor//[!0-9]/}"; min_patch="${min_patch//[!0-9]/}"
+  major="${major:-0}"; minor="${minor:-0}"; patch="${patch:-0}"
+  min_major="${min_major:-0}"; min_minor="${min_minor:-0}"; min_patch="${min_patch:-0}"
+
+  [ "$major" -gt "$min_major" ] && return 0
+  [ "$major" -lt "$min_major" ] && return 1
+  [ "$minor" -gt "$min_minor" ] && return 0
+  [ "$minor" -lt "$min_minor" ] && return 1
+  [ "$patch" -ge "$min_patch" ]
+}
+
 check_link() {
   local src="$1" dst="$2"
   [ -e "$src" ] || return 0
@@ -82,6 +100,40 @@ check_required_commands() {
   check_optional_command lazygit
   check_optional_command btop
   check_optional_command opencode
+}
+
+check_tool_versions() {
+  section "Tool Versions"
+
+  local line version
+  if command -v nvim >/dev/null 2>&1; then
+    IFS= read -r line < <(nvim --version 2>/dev/null || true)
+    version="${line#NVIM v}"
+    version="${version%% *}"
+    if version_at_least "$version" "0.12.0"; then
+      pass "nvim $version >= 0.12.0"
+    else
+      fail "nvim $version is older than required 0.12.0"
+    fi
+  fi
+
+  if command -v tmux >/dev/null 2>&1; then
+    IFS= read -r line < <(tmux -V 2>/dev/null || true)
+    version="${line#tmux }"
+    version="${version%% *}"
+    if version_at_least "$version" "3.3"; then
+      pass "tmux $version >= 3.3"
+    else
+      warn "tmux $version may be too old for popups/passthrough"
+    fi
+  fi
+}
+
+check_dev_tools() {
+  section "Dev Tools"
+  for cmd in lua-language-server gopls clangd yaml-language-server stylua prettier goimports dlv clang-format; do
+    check_optional_command "$cmd"
+  done
 }
 
 check_primary_shell() {
@@ -132,7 +184,7 @@ check_config_drift() {
   fi
 
   if [ -f "$ROOT/.config/kitty/kitty.conf" ]; then
-    if grep -Eq '^[[:space:]]*shell[[:space:]]+(.*/)?fish([[:space:]]|$)' "$ROOT/.config/kitty/kitty.conf"; then
+    if grep -Eq '^[[:space:]]*shell[[:space:]]+(.*/)?fish(-shell)?([[:space:]]|$)' "$ROOT/.config/kitty/kitty.conf"; then
       pass "Kitty shell fish"
     else
       warn "Kitty shell is not fish"
@@ -169,10 +221,13 @@ check_symlinks() {
     nvim
     opencode
     sesh
-    sketchybar
     starship
     tmux
   )
+
+  if [ "$OS" = "Darwin" ]; then
+    config_dirs+=(sketchybar)
+  fi
 
   for dir in "${config_dirs[@]}"; do
     check_link "$ROOT/.config/$dir" "$HOME/.config/$dir"
@@ -301,7 +356,7 @@ check_brewfile() {
     return 0
   fi
 
-  if brew bundle check --file="$ROOT/Brewfile" >/dev/null 2>&1; then
+  if HOMEBREW_NO_AUTO_UPDATE=1 brew bundle check --file="$ROOT/Brewfile" >/dev/null 2>&1; then
     pass "Brewfile satisfied"
   else
     warn "Brewfile has missing packages; run: brew bundle --file=$ROOT/Brewfile"
@@ -406,6 +461,8 @@ EOF
   fi
 
   check_required_commands
+  check_tool_versions
+  check_dev_tools
   check_primary_shell
   check_config_drift
   check_symlinks

@@ -56,10 +56,16 @@ alias lg='lazygit'
 alias t='sesh connect'
 alias dotup="$DOTFILES_DIR/update.sh"
 alias dotclean="$DOTFILES_DIR/cleanup.sh"
-alias cat='bat'
-alias ls='eza --icons'
-alias ll='eza --icons -la'
-alias lt='eza --icons --tree --level=2'
+
+if (( $+commands[bat] )); then
+  alias cat='bat'
+fi
+
+if (( $+commands[eza] )); then
+  alias ls='eza --icons'
+  alias ll='eza --icons -la'
+  alias lt='eza --icons --tree --level=2'
+fi
 
 if (( $+commands[opencode] )); then
   function opencode() {

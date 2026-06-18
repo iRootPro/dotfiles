@@ -42,6 +42,28 @@ link() {
 }
 
 # --- Установка пакетов ---
+install_linux_packages() {
+  local manager="$1"
+  shift
+  local package failed=0
+
+  for package in "$@"; do
+    case "$manager" in
+      apt)
+        sudo apt install -y -qq "$package" >/dev/null 2>&1 || failed=1
+        ;;
+      dnf)
+        sudo dnf install -y "$package" >/dev/null 2>&1 || failed=1
+        ;;
+      pacman)
+        sudo pacman -S --noconfirm --needed "$package" >/dev/null 2>&1 || failed=1
+        ;;
+    esac
+  done
+
+  [ "$failed" -eq 0 ] || yellow "  Некоторые пакеты не установились; попробую fallback-установщики"
+}
+
 install_packages() {
   local packages=(
     neovim tmux fish kitty starship zoxide fzf
@@ -66,16 +88,16 @@ install_packages() {
     if command -v apt &>/dev/null; then
       green "Установка пакетов через apt..."
       sudo apt update -qq
-      sudo apt install -y -qq neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+      install_linux_packages apt git curl fontconfig xz-utils neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting golang-go cargo btop
       # Пакеты которых нет в apt — через cargo/go/binary
       install_from_binary
     elif command -v dnf &>/dev/null; then
       green "Установка пакетов через dnf..."
-      sudo dnf install -y neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null || true
+      install_linux_packages dnf git curl fontconfig xz neovim tmux fish kitty fzf ripgrep fd-find bat jq direnv zsh-autosuggestions zsh-syntax-highlighting golang cargo btop
       install_from_binary
     elif command -v pacman &>/dev/null; then
       green "Установка пакетов через pacman..."
-      sudo pacman -S --noconfirm neovim tmux fish kitty fzf ripgrep fd bat eza git-delta starship zoxide jq direnv lazygit btop go 2>/dev/null || true
+      install_linux_packages pacman git curl fontconfig xz neovim tmux fish kitty fzf ripgrep fd bat eza git-delta starship zoxide jq direnv lazygit btop go rust
     else
       red "Неизвестный пакетный менеджер. Установи пакеты вручную."
       return 1
@@ -125,12 +147,14 @@ install_from_binary() {
   fi
   # bat на Ubuntu называется batcat
   if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
-    sudo ln -sf "$(which batcat)" /usr/local/bin/bat
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
     green "  ✓ batcat → bat"
   fi
   # fd на Ubuntu называется fdfind
   if command -v fdfind &>/dev/null && ! command -v fd &>/dev/null; then
-    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
     green "  ✓ fdfind → fd"
   fi
 }
@@ -153,10 +177,13 @@ link_configs() {
     nvim
     opencode
     sesh
-    sketchybar
     starship
     tmux
   )
+
+  if [ "$OS" = "Darwin" ]; then
+    config_dirs+=(sketchybar)
+  fi
 
   for dir in "${config_dirs[@]}"; do
     [ -e "$DOTFILES/.config/$dir" ] || continue
