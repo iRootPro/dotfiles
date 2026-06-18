@@ -80,8 +80,13 @@ popup_command() {
   printf '\033[1;34m%s\033[0m\n\n' "$command"
   printf '$ %s\n\n' "$command" >"$log"
   set +e
-  fish -lc "$command" 2>&1 | tee -a "$log"
-  status=${PIPESTATUS[0]}
+  if command -v script >/dev/null 2>&1; then
+    script -q -a "$log" fish -lc "$command"
+    status=$?
+  else
+    fish -lc "$command" 2>&1 | tee -a "$log"
+    status=${PIPESTATUS[0]}
+  fi
   set -e
 
   printf '\n'
